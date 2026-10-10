@@ -1,0 +1,2591 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>暗夜微光・轉型正義歷史推理桌遊</title>
+  
+  <!-- Google Fonts: 引入思源宋體、黑體與復古機密字型 -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;900&family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Noto+Sans+TC:wght@400;500;700;900&family=Noto+Serif+TC:wght@400;600;700;900&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Vue 3 CDN (穩定版) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.4.21/vue.global.prod.min.js"></script>
+  <!-- QRCode.js CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <!-- PeerJS WebRTC P2P 免伺服器即時通訊套件 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
+
+  <style>
+    :root {
+      --bg-dark: #050811;
+      --card-bg: #090e1c;
+      --amber-accent: #f59e0b;
+      --amber-glow: rgba(245, 158, 11, 0.4);
+      --red-alarm: #ef4444;
+      --red-glow: rgba(239, 68, 68, 0.45);
+    }
+
+    body {
+      font-family: 'Noto Sans TC', sans-serif;
+      background-color: var(--bg-dark);
+      background-image: 
+        radial-gradient(circle at 50% 10%, rgba(30, 41, 59, 0.4) 0%, transparent 60%),
+        radial-gradient(circle at 80% 90%, rgba(180, 83, 9, 0.08) 0%, transparent 50%);
+    }
+
+    .font-serif-tc { font-family: 'Noto Serif TC', serif; }
+    .font-mono-code { font-family: 'Courier Prime', monospace; }
+    .font-title-en { font-family: 'Cinzel', serif; }
+
+    /* 復古檔案噪點質感 */
+    .retro-grain {
+      background-image: radial-gradient(rgba(245, 158, 11, 0.04) 1px, transparent 0);
+      background-size: 24px 24px;
+    }
+
+    /* 極機密戳印效果 */
+    .classified-stamp {
+      display: inline-block;
+      padding: 3px 12px;
+      text-transform: uppercase;
+      font-weight: 900;
+      letter-spacing: 3px;
+      border: 3px double #ef4444;
+      color: #ef4444;
+      background: rgba(239, 68, 68, 0.08);
+      transform: rotate(-7deg);
+      box-shadow: 0 0 10px rgba(239, 68, 68, 0.2);
+      border-radius: 4px;
+      user-select: none;
+    }
+
+    .topsecret-stamp-amber {
+      display: inline-block;
+      padding: 3px 10px;
+      font-weight: 900;
+      letter-spacing: 2px;
+      border: 2px dashed #f59e0b;
+      color: #fbbf24;
+      background: rgba(245, 158, 11, 0.08);
+      transform: rotate(4deg);
+      border-radius: 4px;
+      user-select: none;
+    }
+
+    /* 心跳危急紅暈 */
+    @keyframes heartbeatPulse {
+      0%, 100% { opacity: 0.1; }
+      20% { opacity: 0.55; }
+      40% { opacity: 0.25; }
+      60% { opacity: 0.7; }
+      80% { opacity: 0.15; }
+    }
+    .heartbeat-vignette {
+      animation: heartbeatPulse 1.1s infinite ease-in-out;
+      background: radial-gradient(circle, transparent 45%, rgba(185, 28, 28, 0.5) 90%, rgba(153, 27, 27, 0.75) 100%);
+    }
+
+    /* 木刻浮雕卡牌 */
+    .woodcut-card {
+      background: radial-gradient(circle at 50% 25%, #131c31 0%, #080d18 100%);
+      box-shadow: inset 0 0 35px rgba(0, 0, 0, 0.9), 0 12px 30px -5px rgba(0, 0, 0, 0.85);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+    .woodcut-frame {
+      position: relative;
+      background: #020617;
+      border: 2px solid #334155;
+      box-shadow: inset 0 0 20px rgba(0,0,0,0.95);
+    }
+    .woodcut-frame::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background: radial-gradient(circle, transparent 50%, rgba(2, 6, 23, 0.85) 100%);
+    }
+
+    /* 3D 翻牌動畫 */
+    .perspective-1000 {
+      perspective: 1000px;
+    }
+    .transform-style-preserve-3d {
+      transform-style: preserve-3d;
+    }
+    .backface-hidden {
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+    }
+    .rotate-y-180 {
+      transform: rotateY(180deg);
+    }
+
+    /* 暖金微光呼吸動效 */
+    @keyframes goldenGlow {
+      0%, 100% { filter: drop-shadow(0 0 15px rgba(245, 158, 11, 0.3)); }
+      50% { filter: drop-shadow(0 0 30px rgba(245, 158, 11, 0.65)); }
+    }
+    .golden-glow-pulse {
+      animation: goldenGlow 3s infinite ease-in-out;
+    }
+
+    /* 自訂平滑捲軸 */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #070b14; }
+    ::-webkit-scrollbar-thumb { background: #223249; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #3b506f; }
+  </style>
+</head>
+<body class="bg-[#050811] text-slate-100 min-h-screen selection:bg-amber-500 selection:text-slate-950 overflow-x-hidden retro-grain flex flex-col justify-between">
+  <div id="app" class="min-h-screen flex flex-col justify-between relative" @click="ensureAudioUnlocked">
+
+    <!-- 頂部聲音解鎖與網路提醒列 -->
+    <div v-if="!isMobileView && isLocalFileProtocol" class="bg-gradient-to-r from-amber-700 via-amber-600 to-amber-700 text-slate-950 text-xs py-2 px-4 text-center font-bold tracking-wide shadow-md flex flex-wrap items-center justify-center gap-2 border-b border-amber-500/40">
+      <span>⚠️ 偵測到目前為本機檔案模式（file://）。若要讓學生手機真實掃碼連線，請點擊右側設定：</span>
+      <button @click="showNetHelpModal = true" class="px-2.5 py-0.5 bg-slate-950 text-amber-300 rounded hover:bg-slate-900 text-[11px] font-semibold border border-amber-500/50 shadow transition">
+        點此開啟手機連線指南與網址覆寫 ❯
+      </button>
+    </div>
+
+    <!-- 大螢幕端頂部主控列 -->
+    <header v-if="!isMobileView" class="border-b border-slate-800/90 bg-[#070c17]/95 backdrop-blur-md px-5 py-3 flex flex-wrap justify-between items-center z-20 shadow-xl sticky top-0">
+      <div class="flex items-center gap-4">
+        <!-- 徽記圖示 -->
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500/20 to-slate-900 border border-amber-500/40 flex items-center justify-center text-xl shadow-inner">
+          🕯️
+        </div>
+        <div>
+          <div class="flex items-center gap-2.5">
+            <h1 class="text-lg md:text-xl font-black tracking-widest text-amber-400 font-serif-tc flex items-center gap-2">
+              暗夜微光
+              <span class="text-[10px] md:text-xs font-normal text-amber-200/70 border border-amber-600/30 px-2 py-0.5 rounded font-sans tracking-normal bg-amber-950/30">
+                轉型正義歷史推理大螢幕
+              </span>
+            </h1>
+          </div>
+          <div class="text-xs text-slate-400 flex items-center gap-2.5 mt-0.5">
+            <span>房號：<b class="text-amber-300 font-mono-code text-sm tracking-wider font-bold">{{ roomCode }}</b></span>
+            <span class="text-slate-600">|</span>
+            <span class="flex items-center gap-1.5">
+              <span class="inline-block w-2.5 h-2.5 rounded-full" :class="p2pStatus === 'CONNECTED' ? 'bg-emerald-400 animate-pulse' : 'bg-yellow-400'"></span>
+              <span>P2P 雲端連線：<b class="text-slate-300">{{ p2pStatusText }}</b>（線上手機：<b class="text-amber-400">{{ connectedClientsCount }}</b> 台）</span>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 右側快捷按鈕群 -->
+      <div class="flex items-center gap-2 mt-2 sm:mt-0 flex-wrap">
+        <!-- 遊戲規則說明 -->
+        <button 
+          @click.stop="showRulesModal = true"
+          class="px-3 py-1.5 bg-slate-800/90 hover:bg-slate-700 border border-slate-700 text-slate-200 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition shadow"
+          title="遊戲玩法與教學指引"
+        >
+          <span>📖 規則指南</span>
+        </button>
+
+        <!-- 歷史畫報圖鑑 -->
+        <button 
+          @click.stop="openGalleryModal(null)"
+          class="px-3 py-1.5 bg-amber-950/70 hover:bg-amber-900/90 border border-amber-600/60 text-amber-300 rounded-lg text-xs font-bold transition shadow flex items-center gap-1.5"
+        >
+          <span>📜 歷史情境繪卷 (14題)</span>
+        </button>
+
+        <!-- 靜音開關 -->
+        <button 
+          @click.stop="toggleMute"
+          :class="isMuted ? 'bg-red-950/80 border-red-700 text-red-300' : 'bg-slate-800/90 border-slate-700 text-emerald-400'"
+          class="px-2.5 py-1.5 rounded-lg border text-xs font-semibold flex items-center gap-1 transition shadow"
+          title="切換音效（快捷鍵：M）"
+        >
+          <span>{{ isMuted ? '🔇 靜音' : '🔊 音效開' }}</span>
+        </button>
+
+        <!-- 連線設定 -->
+        <button 
+          @click="showNetHelpModal = true"
+          class="px-2.5 py-1.5 bg-sky-950/80 hover:bg-sky-900 border border-sky-600/70 text-sky-200 rounded-lg text-xs font-semibold flex items-center gap-1"
+        >
+          <span>⚙️ 連線設定</span>
+        </button>
+
+        <!-- 全螢幕切換 -->
+        <button 
+          @click="toggleFullScreen"
+          class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 rounded-lg text-xs font-semibold"
+          title="全螢幕切換（快捷鍵：F）"
+        >
+          <span>{{ isFullscreen ? '⤢ 退出全螢幕' : '⛶ 全螢幕' }}</span>
+        </button>
+
+        <!-- 質詢時間即時調整 (僅在質詢階段出現) -->
+        <div v-if="currentStatus === 'INQUIRY'" class="flex items-center gap-1 bg-slate-950/90 p-1 rounded-lg border border-slate-800 shadow-inner">
+          <button @click.stop="togglePause" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 rounded text-xs border border-slate-700 font-medium">
+            {{ isPaused ? '▶ 繼續' : '⏸ 暫停' }}
+          </button>
+          <button @click.stop="adjustTime(60)" class="px-1.5 py-1 bg-slate-800 hover:bg-slate-700 rounded text-xs border border-slate-700 text-slate-300">+1分</button>
+          <button @click.stop="adjustTime(-60)" class="px-1.5 py-1 bg-slate-800 hover:bg-slate-700 rounded text-xs border border-slate-700 text-slate-300">-1分</button>
+          <button @click.stop="setTime(59)" class="px-2 py-1 bg-red-950/80 hover:bg-red-900 border border-red-600/70 text-red-300 rounded text-xs font-bold animate-pulse">
+            ⚡ 倒數59秒
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- ====================================================================== -->
+    <!-- 視圖 A：教師大螢幕模式 (HOST DISPLAY) -->
+    <!-- ====================================================================== -->
+    <main v-if="!isMobileView" class="flex-1 flex flex-col justify-center px-4 md:px-10 py-6 relative">
+
+      <!-- 階段 1：大廳集結 (LOBBY) -->
+      <section v-if="currentStatus === 'LOBBY'" class="max-w-6xl w-full mx-auto grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch">
+        <!-- 左側：QR Code 掃描與連線指引 -->
+        <div class="md:col-span-5 woodcut-card p-6 rounded-2xl flex flex-col items-center justify-between text-center relative overflow-hidden">
+          <div class="absolute -top-10 -left-10 w-40 h-40 bg-amber-500/10 rounded-full blur-2xl pointer-events-none"></div>
+
+          <div class="w-full flex flex-col items-center relative z-10">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="topsecret-stamp-amber text-[10px]">ROOM PASS</span>
+              <span class="text-sm font-bold text-amber-300 tracking-wider">班級手機掃描連線</span>
+            </div>
+            <p class="text-xs text-slate-400 mb-3.5">學生開啟手機相機掃描 QR Code 即刻加入秘密會議</p>
+            
+            <div class="p-3 bg-white rounded-2xl shadow-2xl inline-block mb-3 border-4 border-amber-500/30">
+              <div id="qrcode" class="w-48 h-48 flex items-center justify-center"></div>
+            </div>
+
+            <!-- 連線網址顯示與快速複製 -->
+            <div class="text-[11px] text-amber-200/90 font-mono-code bg-slate-950/90 px-3 py-2 rounded-lg border border-amber-600/30 break-all select-all w-full text-center shadow-inner">
+              {{ joinUrl }}
+            </div>
+            
+            <button @click="copyJoinUrl" class="mt-2.5 text-xs text-amber-400 hover:text-amber-300 font-semibold flex items-center gap-1.5 transition">
+              <span>📋 複製手機專屬加入網址</span>
+            </button>
+          </div>
+
+          <div class="mt-4 pt-3 border-t border-slate-800/90 w-full text-left text-[11px] text-slate-400 space-y-1 relative z-10">
+            <div>💡 <b>連線提示</b>：若在教室區域網路使用，點擊右上角【連線設定】可自訂教室 IP。</div>
+            <div class="text-slate-500">無網路環境亦可直接點擊發牌，在黑板大螢幕使用「防窺單機傳閱模式」。</div>
+          </div>
+        </div>
+
+        <!-- 右側：學員名冊、主題挑選與發牌控制 -->
+        <div class="md:col-span-7 woodcut-card p-6 rounded-2xl flex flex-col justify-between relative overflow-hidden">
+          <div>
+            <div class="flex flex-wrap justify-between items-center pb-3 border-b border-slate-800 gap-2 mb-4">
+              <div>
+                <h2 class="text-base font-bold text-slate-200 flex items-center gap-2">
+                  <span>👥 已就緒同學名冊</span>
+                  <span class="text-xs px-2 py-0.5 rounded-full bg-amber-950/80 text-amber-300 border border-amber-600/50">
+                    共 {{ players.length }} 人
+                  </span>
+                  <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-300 border border-emerald-700/60 flex items-center gap-1">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                    手機連線：{{ connectedClientsCount }} 台
+                  </span>
+                </h2>
+              </div>
+
+              <!-- 時代情境與遊戲時間篩選 -->
+              <div class="flex gap-2">
+                <select v-model="selectedEra" class="bg-slate-900 text-xs text-amber-300 border border-slate-700 rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-amber-500">
+                  <option value="ALL">全部歷史時代 (14 題)</option>
+                  <option value="white_terror">白色恐怖時期 (8 題)</option>
+                  <option value="228_incident">二二八事件 (3 題)</option>
+                  <option value="japanese_rule">日治時期抗爭 (3 題)</option>
+                </select>
+                <select v-model="roundTimeConfig" class="bg-slate-900 text-xs text-slate-300 border border-slate-700 rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-amber-500">
+                  <option :value="300">⏱ 5 分鐘 (緊湊)</option>
+                  <option :value="480">⏱ 8 分鐘 (標準)</option>
+                  <option :value="600">⏱ 10 分鐘 (充分發言)</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- 學員標籤網格（標明是否為手機連線端） -->
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 max-h-56 overflow-y-auto pr-1">
+              <div 
+                v-for="(p, idx) in players" 
+                :key="p.id" 
+                class="px-3 py-2 rounded-xl border text-xs font-medium flex items-center justify-between shadow-sm transition"
+                :class="p.isRemote ? 'border-emerald-600/50 bg-emerald-950/30 text-emerald-200' : 'border-slate-800 bg-slate-900/90 text-slate-300'"
+              >
+                <div class="truncate flex items-center gap-1.5">
+                  <span class="font-mono-code text-[11px] text-slate-500 font-bold">{{ idx + 1 }}.</span>
+                  <span class="truncate font-semibold">{{ p.name }}</span>
+                  <span v-if="p.isRemote" class="text-[10px] text-emerald-400 bg-emerald-950 px-1 py-0.2 rounded border border-emerald-700/50" title="手機遠端連線">📱</span>
+                  <span v-else class="text-[10px] text-slate-500 bg-slate-950 px-1 py-0.2 rounded" title="本機席位">🖥</span>
+                </div>
+                <button 
+                  v-if="players.length > 3" 
+                  @click="removePlayer(idx)" 
+                  class="text-slate-500 hover:text-red-400 font-bold ml-1 transition"
+                  title="移除席位"
+                >✕</button>
+              </div>
+            </div>
+
+            <!-- 手動新增預備學生（單機測試與現場補位） -->
+            <div class="mt-4 flex gap-2">
+              <input 
+                v-model="newPlayerName" 
+                @keyup.enter="addPlayer"
+                placeholder="手動新增同學姓名（單機模式或現場補位）..." 
+                class="flex-1 bg-slate-950/90 border border-slate-700/80 rounded-xl px-3.5 py-2 text-xs text-slate-200 focus:outline-none focus:border-amber-500 transition placeholder:text-slate-600"
+              />
+              <button @click="addPlayer" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-xs font-semibold rounded-xl border border-slate-700 text-slate-200 transition">
+                + 新增席位
+              </button>
+            </div>
+          </div>
+
+          <!-- 開始發牌動作按鈕 -->
+          <div class="mt-5 pt-4 border-t border-slate-800">
+            <button 
+              @click="startGame" 
+              class="w-full py-4 bg-gradient-to-r from-amber-600 via-amber-500 to-amber-600 hover:from-amber-500 hover:to-amber-400 text-slate-950 font-black text-base md:text-lg tracking-wider rounded-xl shadow-xl transition-all duration-300 transform active:scale-[0.99] flex items-center justify-center gap-2 golden-glow-pulse"
+            >
+              <span>🚀 全員就緒・隨機抽題同步發牌</span>
+              <span class="text-xs bg-slate-950/80 text-amber-300 font-mono-code px-2 py-0.5 rounded-full">
+                {{ candidateScenarios.length }} 題備選庫
+              </span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 階段 2：身分確認 (ROLE_REVEAL) -->
+      <section v-else-if="currentStatus === 'ROLE_REVEAL'" class="max-w-4xl w-full mx-auto text-center py-8 px-6 woodcut-card rounded-2xl relative overflow-hidden shadow-2xl">
+        <div class="classified-stamp mb-3">TOP SECRET // 機密檔案</div>
+        <h2 class="text-2xl md:text-3xl font-black text-slate-100 font-serif-tc mb-2">請同學檢視各自手機的秘密身分</h2>
+        <p class="text-slate-400 text-xs max-w-lg mx-auto mb-6 leading-relaxed">
+          手機連線同學將同步看見各自的身分與職責指示；若採黑板單機傳閱，可輪流點擊下方同學名字進行<b>「防窺私密翻牌」</b>。
+        </p>
+
+        <!-- 學生卡牌狀態格（顯示確認狀態） -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 max-w-4xl mx-auto mb-8">
+          <button 
+            v-for="p in players" 
+            :key="p.id"
+            @click="openSecretCardModal(p)"
+            class="p-3.5 rounded-xl border transition-all duration-200 flex flex-col items-center justify-center gap-1.5 shadow"
+            :class="p.hasCheckedCard ? 'bg-emerald-950/30 border-emerald-600/70 text-emerald-200 ring-1 ring-emerald-500/30' : 'bg-slate-900 border-slate-700/80 hover:border-amber-500/80 text-slate-200 hover:bg-slate-800'"
+          >
+            <div class="text-xs font-bold truncate w-full">{{ p.name }}</div>
+            <div class="text-[10px] px-2 py-0.5 rounded-full font-mono-code" :class="p.hasCheckedCard ? 'bg-emerald-900/80 text-emerald-300' : 'bg-slate-800 text-slate-400'">
+              {{ p.hasCheckedCard ? '✓ 已記妥身分' : '👁 私密翻牌' }}
+            </div>
+          </button>
+        </div>
+
+        <div class="flex justify-center gap-3">
+          <button 
+            @click="startInquiryStage"
+            class="px-8 py-3.5 bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-slate-950 font-black text-sm md:text-base rounded-xl shadow-xl transition active:scale-95 flex items-center gap-2"
+          >
+            <span>全班確認完畢・正式進入質詢攻防 ➔</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- 階段 3：質詢攻防 (INQUIRY) - 大螢幕核心畫面 -->
+      <section v-else-if="currentStatus === 'INQUIRY'" class="flex flex-col items-center justify-center relative w-full text-center">
+        <!-- 最後一分鐘緊迫心跳警戒紅暈 -->
+        <div v-if="isUnderOneMinute" class="fixed inset-0 pointer-events-none heartbeat-vignette z-0"></div>
+
+        <div class="z-10 flex flex-col items-center w-full max-w-5xl">
+          
+          <div class="flex items-center gap-3 mb-2">
+            <span class="text-xs tracking-widest uppercase font-bold text-amber-400 border border-amber-600/40 px-3 py-1 rounded-full bg-amber-950/40">
+              秘密質詢攻防階段
+            </span>
+            <span v-if="isPaused" class="px-2.5 py-0.5 bg-yellow-500/20 text-yellow-300 text-xs rounded-full border border-yellow-500/50 animate-pulse">
+              ⏸ 計時已暫停
+            </span>
+          </div>
+
+          <!-- 圓環倒數計時器與巨型數字時鐘 -->
+          <div class="relative my-2 flex items-center justify-center">
+            <!-- SVG 圓形進度環 -->
+            <svg class="w-64 h-64 sm:w-80 sm:h-80 -rotate-90 transform" viewBox="0 0 200 200">
+              <circle cx="100" cy="100" r="90" fill="transparent" stroke="#1e293b" stroke-width="8" stroke-dasharray="4 4"/>
+              <circle 
+                cx="100" 
+                cy="100" 
+                r="90" 
+                fill="transparent" 
+                :stroke="isUnderOneMinute ? '#ef4444' : '#f59e0b'" 
+                stroke-width="9" 
+                stroke-linecap="round"
+                :stroke-dasharray="2 * Math.PI * 90"
+                :stroke-dashoffset="timerProgressOffset"
+                class="transition-all duration-1000 ease-linear"
+              />
+            </svg>
+
+            <!-- 內部居中巨型倒數文字 -->
+            <div class="absolute inset-0 flex flex-col items-center justify-center select-none pointer-events-none">
+              <div 
+                class="text-6xl sm:text-7xl font-mono-code font-black tracking-tighter leading-none transition-colors duration-500"
+                :class="isUnderOneMinute ? 'text-red-500 drop-shadow-[0_0_35px_rgba(239,68,68,0.85)] animate-pulse' : 'text-amber-400 drop-shadow-[0_0_20px_rgba(245,158,11,0.5)]'"
+              >
+                {{ formattedTime }}
+              </div>
+              <div class="text-[11px] font-bold tracking-widest mt-1" :class="isUnderOneMinute ? 'text-red-300 animate-bounce' : 'text-slate-400'">
+                {{ isUnderOneMinute ? '🚨 倒數進入緊急收網！' : '倒數計時中' }}
+              </div>
+            </div>
+          </div>
+
+          <!-- 提問互動指引與輪替軌跡 -->
+          <div class="w-full max-w-2xl bg-slate-900/90 border border-slate-700/80 px-6 py-3.5 rounded-2xl flex flex-wrap items-center justify-between shadow-2xl backdrop-blur-md mb-4 gap-3">
+            <div class="flex items-center gap-4 flex-1">
+              <div class="text-center">
+                <div class="text-[10px] text-amber-400 font-bold uppercase tracking-wider">🎯 提問同學</div>
+                <div class="text-base sm:text-lg font-black text-amber-300 font-serif-tc mt-0.5">{{ activeAsker }}</div>
+              </div>
+              <div class="text-slate-500 text-lg font-bold">──➔</div>
+              <div class="text-center">
+                <div class="text-[10px] text-sky-400 font-bold uppercase tracking-wider">🗣️ 回答同學</div>
+                <div class="text-base sm:text-lg font-black text-sky-300 font-serif-tc mt-0.5">{{ activeAnswerer }}</div>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <button @click="nextTurn" class="text-xs bg-slate-800 hover:bg-slate-700 px-3 py-2 rounded-xl border border-slate-600 text-slate-200 font-semibold transition active:scale-95 shadow">
+                輪替下一位 ❯
+              </button>
+            </div>
+          </div>
+
+          <!-- 課堂破冰：隨機提問錦囊 (解決學生不知道問什麼的痛點) -->
+          <div class="w-full max-w-2xl bg-amber-950/20 border border-amber-600/40 rounded-xl p-3 mb-5 flex items-center justify-between text-left gap-3 shadow-inner">
+            <div class="flex items-center gap-2.5 overflow-hidden">
+              <span class="text-xl">💡</span>
+              <div class="overflow-hidden">
+                <div class="text-[10px] font-bold text-amber-400 uppercase tracking-wider">質詢試探錦囊（卡關時可參考提問）：</div>
+                <div class="text-xs text-slate-200 font-medium truncate mt-0.5">{{ currentInquiryPrompt }}</div>
+              </div>
+            </div>
+            <button @click="drawNextPrompt" class="px-2.5 py-1 bg-amber-900/60 hover:bg-amber-800 border border-amber-500/50 rounded-lg text-amber-200 text-xs font-bold whitespace-nowrap transition">
+              🎲 換一題
+            </button>
+          </div>
+
+          <!-- 課堂參考歷史清單（供全員隱語對照） -->
+          <div class="w-full max-w-4xl bg-slate-900/60 p-4 rounded-xl border border-slate-800/80 mb-6 backdrop-blur">
+            <div class="text-xs text-slate-400 mb-2 font-medium flex justify-between items-center">
+              <span>📜 本場次可能之歷史情境清單（供全員隱語對照，點擊可預覽歷史）：</span>
+              <button @click="openGalleryModal(null)" class="text-[11px] text-amber-400 hover:underline flex items-center gap-1">
+                <span>🔍 開啟 14 幅手繪大圖鑑</span>
+              </button>
+            </div>
+            <div class="flex flex-wrap justify-center gap-1.5">
+              <button 
+                v-for="s in candidateScenarios" 
+                :key="s.id"
+                @click="openGalleryModal(s)"
+                class="px-2.5 py-1 bg-slate-800/80 hover:bg-slate-700 border border-slate-700/60 rounded-lg text-xs text-slate-300 transition flex items-center gap-1 hover:border-amber-500/60"
+              >
+                <span class="text-[10px] text-amber-400">#</span>
+                <span>{{ s.name }}</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- 階段推進按鈕 -->
+          <div class="flex flex-wrap justify-center gap-3">
+            <button 
+              @click="triggerVoting" 
+              class="px-7 py-3.5 bg-red-950/90 hover:bg-red-900 text-red-200 border-2 border-red-600/80 font-black text-sm rounded-xl shadow-xl flex items-center gap-2 transition transform active:scale-95"
+            >
+              <span>🚨 發現破綻！發起全員緊急指認審判</span>
+            </button>
+            <button 
+              @click="triggerSpySurrender"
+              class="px-5 py-3.5 bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700 font-semibold text-xs rounded-xl transition"
+            >
+              <span>🕵️ 特務線民主動掀牌反撲</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 階段 4：緊急審判投票 (VOTING) -->
+      <section v-else-if="currentStatus === 'VOTING'" class="max-w-4xl w-full mx-auto text-center py-8 px-6 bg-red-950/20 border-2 border-red-600/80 rounded-2xl shadow-2xl relative">
+        <div class="classified-stamp mb-3">TRIAL IN PROGRESS // 緊急審判</div>
+        <h2 class="text-3xl font-black text-red-400 font-serif-tc mb-2">威權體制緊急審判・請全班指認潛伏線民</h2>
+        <p class="text-slate-300 text-xs max-w-lg mx-auto mb-6">
+          已連線同學可在手機上直接點擊指認；亦可由老師直接在此大螢幕點選計票。
+        </p>
+
+        <!-- 投票互動候選人板 -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 max-w-4xl mx-auto mb-7">
+          <button 
+            v-for="p in players" 
+            :key="p.id"
+            @click="voteForPlayer(p.id)"
+            class="p-4 rounded-xl border text-center transition-all relative overflow-hidden flex flex-col justify-between"
+            :class="selectedVoteTargetId === p.id ? 'bg-red-900/90 border-red-400 text-white ring-2 ring-red-500 shadow-xl' : 'bg-slate-900/90 border-slate-700/80 text-slate-300 hover:border-slate-500'"
+          >
+            <div>
+              <div class="text-sm font-bold truncate">{{ p.name }}</div>
+              <div class="text-[10px] text-slate-400 mt-0.5">{{ p.isRemote ? '📱 手機端' : '🖥 單機' }}</div>
+            </div>
+            
+            <div class="mt-3 pt-2 border-t border-slate-800/80">
+              <div class="text-base font-black font-mono-code" :class="(votesTally[p.id] || 0) > 0 ? 'text-red-400' : 'text-slate-500'">
+                {{ votesTally[p.id] || 0 }} 票
+              </div>
+            </div>
+          </button>
+        </div>
+
+        <div class="flex justify-center gap-3">
+          <button 
+            @click="resolveVotingTally"
+            class="px-8 py-3.5 bg-red-600 hover:bg-red-500 text-white font-black text-sm rounded-xl shadow-xl transition transform active:scale-95"
+          >
+            <span>⚖️ 敲槌宣判・結算指認票數</span>
+          </button>
+          <button 
+            @click="cancelVoting" 
+            class="px-5 py-3.5 bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-xs rounded-xl transition"
+          >
+            取消審判，返回質詢
+          </button>
+        </div>
+      </section>
+
+      <!-- 階段 5：線民反撲密報 (SPY_GUESS) -->
+      <section v-else-if="currentStatus === 'SPY_GUESS'" class="max-w-4xl w-full mx-auto text-center py-8 px-6 woodcut-card border border-amber-600/70 rounded-2xl shadow-2xl">
+        <div class="classified-stamp mb-3">TELEGRAM DISPATCH // 機密電報</div>
+        <h2 class="text-2xl md:text-3xl font-black text-amber-300 font-serif-tc mb-2">特務線民身分已被鎖定！</h2>
+        <p class="text-slate-300 text-xs max-w-lg mx-auto mb-6">
+          線民（<span class="text-red-400 font-bold">{{ spyPlayer?.name }}</span>）正在手機上密報據點；亦可在黑板大螢幕由同學指認最終據點：
+        </p>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-w-3xl mx-auto mb-6 text-left">
+          <button 
+            v-for="s in candidateScenarios" 
+            :key="s.id"
+            @click="submitSpyGuess(s.id)"
+            class="p-3.5 rounded-xl border border-slate-700 bg-slate-900/90 hover:bg-amber-950/60 hover:border-amber-500 text-xs text-slate-200 transition flex justify-between items-center group shadow"
+          >
+            <div class="flex items-center gap-2">
+              <span class="text-amber-500 font-mono-code font-bold">▶</span>
+              <span class="font-bold group-hover:text-amber-300 transition">{{ s.name }}</span>
+            </div>
+            <span class="text-[10px] text-slate-400 bg-slate-950 px-2 py-0.5 rounded border border-slate-800">{{ s.eraName }}</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- 階段 6：歷史真相復盤 (DEBRIEF) -->
+      <section v-else-if="currentStatus === 'DEBRIEF'" class="max-w-5xl w-full mx-auto py-4">
+        <!-- 核心戰報牌卡 -->
+        <div class="woodcut-card p-6 md:p-8 rounded-2xl mb-6 shadow-2xl relative overflow-hidden">
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+            
+            <!-- 左側手繪木刻大圖 -->
+            <div class="md:col-span-5 woodcut-frame rounded-2xl overflow-hidden shadow-2xl aspect-[16/10] flex items-center justify-center border-2 border-amber-500/40">
+              <div class="w-full h-full" v-html="getScenarioSvg(currentScenario.id, true)"></div>
+            </div>
+
+            <!-- 右側解密資訊 -->
+            <div class="md:col-span-7 flex flex-col justify-between">
+              <div>
+                <div class="flex flex-wrap justify-between items-center gap-2 mb-2">
+                  <span class="text-xs font-bold tracking-widest text-amber-300 uppercase bg-amber-950/80 px-3 py-1 rounded-full border border-amber-500/50">
+                    {{ currentScenario.eraName }}
+                  </span>
+                  <span 
+                    class="px-3.5 py-1 rounded-full text-xs font-black border shadow"
+                    :class="gameResult.winner === 'CITIZENS' ? 'bg-emerald-950 text-emerald-300 border-emerald-600' : 'bg-red-950 text-red-300 border-red-600'"
+                  >
+                    {{ gameResult.winner === 'CITIZENS' ? '✓ 平民成功守護秘密據點' : '✗ 特務線民密報全盤破獲' }}
+                  </span>
+                </div>
+                <h2 class="text-2xl md:text-3xl font-black text-amber-300 font-serif-tc tracking-wide mt-1">
+                  {{ currentScenario.name }}
+                </h2>
+              </div>
+
+              <div class="mt-4 pt-3 border-t border-slate-800 text-xs md:text-sm space-y-1.5 font-medium">
+                <div>潛伏特務線民：<span class="text-red-400 font-bold">{{ spyPlayer?.name }}</span></div>
+                <div>線民掩護身分：<span class="text-amber-200">{{ currentScenario.spy.name }}</span></div>
+                <div>刺探目標：<span class="text-slate-400">{{ currentScenario.spy.objective }}</span></div>
+              </div>
+
+              <div class="mt-4 text-xs md:text-sm font-semibold text-slate-200 bg-slate-950/80 p-3 rounded-xl border border-amber-900/50 leading-relaxed">
+                {{ gameResult.reasonText }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 歷史原型檔案詳細考據 -->
+        <div class="bg-slate-900/90 border border-slate-800 p-6 rounded-2xl mb-5 shadow-xl">
+          <div class="flex items-center gap-2.5 mb-2 text-sky-400">
+            <span class="text-xl">📜</span>
+            <h3 class="text-base font-bold font-serif-tc">歷史原型檔案：{{ currentScenario.debrief.historicalEvent }}</h3>
+          </div>
+          <p class="text-slate-300 text-xs md:text-sm leading-relaxed pl-7">
+            {{ currentScenario.debrief.summary }}
+          </p>
+        </div>
+
+        <!-- 課堂思辨提問 -->
+        <div class="bg-gradient-to-r from-slate-900 via-amber-950/40 to-slate-900 border border-amber-500/60 p-6 rounded-2xl shadow-xl">
+          <div class="flex items-center gap-2.5 mb-2 text-amber-400">
+            <span class="text-xl">💬</span>
+            <h3 class="text-base font-bold font-serif-tc">課堂思辨提問（請分組發表討論）</h3>
+          </div>
+          <p class="text-base md:text-lg font-bold text-white pl-7 leading-relaxed font-serif-tc">
+            「{{ currentScenario.debrief.reflectionQuestion }}」
+          </p>
+        </div>
+
+        <!-- 回大廳按鈕 -->
+        <div class="mt-6 flex justify-end">
+          <button @click="resetToLobby" class="px-7 py-3.5 bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-slate-950 font-black rounded-xl text-sm transition shadow-xl">
+            🔄 返回大廳，進行下一輪體驗
+          </button>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- ====================================================================== -->
+    <!-- 視圖 B：學生手機專屬端 (MOBILE CLIENT DISPLAY) -->
+    <!-- ====================================================================== -->
+    <main v-else class="flex-1 flex flex-col p-4 max-w-md w-full mx-auto justify-center">
+
+      <!-- 手機階段 1：輸入姓名加入房間 -->
+      <section v-if="!mobileMyPlayer" class="woodcut-card p-6 rounded-2xl shadow-2xl text-center space-y-4">
+        <div class="w-14 h-14 bg-amber-500/20 text-amber-400 rounded-full flex items-center justify-center text-3xl mx-auto border border-amber-500/40">
+          📱
+        </div>
+        <div class="classified-stamp">CONFIDENTIAL DOSSIER</div>
+        <h2 class="text-xl font-black text-amber-300 font-serif-tc">加入歷史秘密會議</h2>
+        <p class="text-xs text-slate-400">
+          已成功連接至黑板房間：<b class="text-white font-mono-code">{{ mobileRoomTarget }}</b>
+        </p>
+
+        <div class="text-left space-y-1.5 pt-2">
+          <label class="text-xs font-semibold text-slate-300">請輸入你的姓名或座號：</label>
+          <input 
+            v-model="mobileInputName" 
+            placeholder="例如：3號 志銘、小文..." 
+            class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-amber-500 transition shadow-inner"
+            @keyup.enter="submitMobileJoin"
+          />
+        </div>
+
+        <button 
+          @click="submitMobileJoin" 
+          :disabled="!mobileInputName.trim()"
+          class="w-full py-3.5 bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 disabled:opacity-50 text-slate-950 font-black rounded-xl shadow-xl text-sm transition"
+        >
+          確認報到並就緒 ➔
+        </button>
+      </section>
+
+      <!-- 手機階段 2：大廳等待發牌 -->
+      <section v-else-if="mobileGameState?.status === 'LOBBY'" class="woodcut-card p-6 rounded-2xl text-center space-y-4 shadow-xl">
+        <div class="w-12 h-12 border-4 border-amber-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
+        <h3 class="text-lg font-bold text-slate-200">你好，{{ mobileMyPlayer.name }}！</h3>
+        <p class="text-xs text-slate-400">已成功報到！請注視前方黑板大螢幕，等待老師抽取情境並發牌...</p>
+        <div class="p-3 bg-slate-950/80 rounded-xl text-xs font-mono-code text-emerald-400 border border-slate-800">
+          ✓ 與主持人大螢幕即時同步中
+        </div>
+      </section>
+
+      <!-- 手機階段 3：私密身分卡 (ROLE_REVEAL & INQUIRY) -->
+      <section v-else-if="mobileGameState?.status === 'ROLE_REVEAL' || mobileGameState?.status === 'INQUIRY'" class="space-y-4">
+        
+        <!-- 手機頂部計時與身分卡頭部 -->
+        <div class="flex justify-between items-center bg-slate-900/90 px-4 py-2.5 rounded-xl border border-slate-800">
+          <div class="text-xs">
+            <span class="text-slate-400">席位：</span><b class="text-white">{{ mobileMyPlayer.name }}</b>
+          </div>
+          <div class="text-xs font-mono-code font-bold flex items-center gap-1" :class="mobileTimeRemaining <= 60 ? 'text-red-400 animate-pulse' : 'text-amber-400'">
+            <span>⏱</span>
+            <span>{{ mobileFormattedTime }}</span>
+          </div>
+        </div>
+
+        <!-- 私密身分卡本體 (支援防窺長按與點擊翻面) -->
+        <div 
+          class="woodcut-card rounded-2xl overflow-hidden shadow-2xl transition-all duration-300 relative border"
+          :class="mobileCardRevealed ? (mobileMyCard?.isSpy ? 'border-red-600' : 'border-amber-500') : 'border-slate-800'"
+        >
+          <!-- 蓋牌防窺狀態 -->
+          <div v-if="!mobileCardRevealed" class="p-8 text-center flex flex-col items-center justify-center space-y-4 bg-slate-950/90">
+            <div class="classified-stamp">TOP SECRET // 機密封存</div>
+            <div class="text-5xl my-2">🔒</div>
+            <div class="text-sm font-bold text-slate-200 font-serif-tc">機密身分情資已就緒</div>
+            <p class="text-xs text-slate-400 max-w-xs">
+              請確認周遭無人偷看後，點擊或<b>按住下方按鈕</b>查看身分：
+            </p>
+            
+            <div class="flex flex-col gap-2 w-full max-w-xs">
+              <button 
+                @click="toggleMobileCardRevealed" 
+                class="w-full py-3 bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-slate-950 font-black rounded-xl text-xs shadow-lg transition active:scale-95"
+              >
+                👁 翻開秘密身分卡
+              </button>
+              <button 
+                @touchstart="mobileCardRevealed = true"
+                @touchend="mobileCardRevealed = false"
+                @mousedown="mobileCardRevealed = true"
+                @mouseup="mobileCardRevealed = false"
+                class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold rounded-xl text-xs border border-slate-700"
+              >
+                👆 長按即時窺視（放開立刻蓋牌）
+              </button>
+            </div>
+          </div>
+
+          <!-- 翻開狀態 -->
+          <div v-else class="text-left">
+            <!-- 頂部手繪情境橫幅 -->
+            <div class="woodcut-frame h-36 w-full flex items-center justify-center relative">
+              <div v-if="!mobileMyCard?.isSpy" class="w-full h-full" v-html="getScenarioSvg(mobileGameState.scenarioId, false)"></div>
+              <div v-else class="w-full h-full bg-[#080d18] flex flex-col items-center justify-center text-center p-3">
+                <span class="text-3xl mb-1">🕵️</span>
+                <span class="text-xs font-mono-code text-red-400 tracking-wider font-bold">【極機密・特務刺探任務中】</span>
+                <span class="text-[10px] text-slate-400 mt-0.5">地點未明・注意周遭暗語拼湊據點</span>
+              </div>
+              <div class="absolute bottom-2 left-3 px-2 py-0.5 rounded text-[10px] font-bold uppercase backdrop-blur" :class="mobileMyCard?.isSpy ? 'bg-red-900/80 text-red-200 border border-red-600' : 'bg-black/75 text-amber-300 border border-amber-600/50'">
+                {{ mobileMyCard?.isSpy ? '潛伏特務線民' : mobileMyCard?.eraName }}
+              </div>
+            </div>
+
+            <!-- 任務內容指示 -->
+            <div class="p-4 space-y-3">
+              <div>
+                <div class="text-[10px] uppercase font-bold tracking-wider" :class="mobileMyCard?.isSpy ? 'text-red-400' : 'text-amber-400'">
+                  {{ mobileMyCard?.isSpy ? '身分狀態' : '秘密聚會據點' }}
+                </div>
+                <div class="text-lg font-black text-white font-serif-tc">
+                  {{ mobileMyCard?.scenarioName }}
+                </div>
+              </div>
+
+              <div class="text-xs text-slate-200 bg-slate-950/80 p-3 rounded-xl border border-slate-800 space-y-1">
+                <div class="font-bold text-amber-300">角色代號：{{ mobileMyCard?.roleName }}</div>
+                <div class="text-[11px] text-slate-300 leading-relaxed"><b>行動指示：</b>{{ mobileMyCard?.roleDescription }}</div>
+              </div>
+
+              <div class="flex justify-between items-center pt-2">
+                <button @click="mobileCardRevealed = false" class="text-xs text-slate-400 hover:text-white underline">
+                  🙈 蓋上防窺
+                </button>
+                <button 
+                  v-if="mobileGameState?.status === 'ROLE_REVEAL'"
+                  @click="notifyCardChecked"
+                  class="px-4 py-1.5 bg-emerald-600 text-slate-950 text-xs font-bold rounded-lg shadow"
+                >
+                  ✓ 我已記妥身分
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 供線民對照與平民推理之 14 道歷史情境折疊手冊 -->
+        <div class="woodcut-card rounded-xl p-3 text-xs border border-slate-800">
+          <div class="font-bold text-slate-300 mb-1.5 flex justify-between items-center">
+            <span>📜 14 道歷史情境隨身手冊（發言刺探參考）：</span>
+          </div>
+          <div class="grid grid-cols-1 gap-1 max-h-36 overflow-y-auto pr-1">
+            <div v-for="s in candidateScenarios" :key="s.id" class="p-1.5 bg-slate-950/80 rounded border border-slate-800/80 text-[11px] text-slate-300 flex justify-between items-center">
+              <span>{{ s.name }}</span>
+              <span class="text-[9px] text-slate-500">{{ s.eraName.slice(0, 4) }}</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 手機階段 4：緊急審判投票 (VOTING) -->
+      <section v-else-if="mobileGameState?.status === 'VOTING'" class="bg-red-950/20 border-2 border-red-700/80 p-5 rounded-2xl text-center space-y-4 shadow-2xl">
+        <div class="classified-stamp">URGENT VOTE // 緊急審判</div>
+        <h3 class="text-lg font-black text-white font-serif-tc">指認潛伏特務線民</h3>
+        <p class="text-xs text-slate-300">請點選你懷疑的同學投下一票：</p>
+
+        <div class="grid grid-cols-2 gap-2 text-xs">
+          <button 
+            v-for="p in mobileGameState.players" 
+            :key="p.id"
+            @click="mobileCastVote(p.id)"
+            class="p-3 rounded-xl border text-center transition font-semibold"
+            :class="mobileSelectedVoteId === p.id ? 'bg-red-900 border-red-400 text-white ring-2 ring-red-500 shadow-lg' : 'bg-slate-950 border-slate-800 text-slate-300'"
+          >
+            {{ p.name }}
+          </button>
+        </div>
+      </section>
+
+      <!-- 手機階段 5：線民反猜 (SPY_GUESS) -->
+      <section v-else-if="mobileGameState?.status === 'SPY_GUESS'" class="woodcut-card border border-amber-600 p-5 rounded-2xl text-center space-y-4 shadow-2xl">
+        <div v-if="mobileMyCard?.isSpy" class="space-y-3">
+          <div class="classified-stamp">FINAL RECKONING // 線民密報</div>
+          <h3 class="text-base font-bold text-white">身分已被發現！請猜出今日秘密據點：</h3>
+          <div class="grid grid-cols-1 gap-1.5 text-xs text-left max-h-64 overflow-y-auto pr-1">
+            <button 
+              v-for="s in candidateScenarios" 
+              :key="s.id"
+              @click="mobileSubmitSpyGuess(s.id)"
+              class="p-2.5 bg-slate-950 hover:bg-amber-950/70 border border-slate-800 rounded-lg text-slate-200 transition"
+            >
+              {{ s.name }}
+            </button>
+          </div>
+        </div>
+        <div v-else class="py-6 space-y-2">
+          <div class="text-3xl">🕵️</div>
+          <h3 class="text-base font-bold text-slate-200 font-serif-tc">線民正在進行最後反撲密報...</h3>
+          <p class="text-xs text-slate-400">請注視黑板大螢幕，等待最終歷史判決！</p>
+        </div>
+      </section>
+
+      <!-- 手機階段 6：復盤真相 (DEBRIEF) -->
+      <section v-else-if="mobileGameState?.status === 'DEBRIEF'" class="woodcut-card p-5 rounded-2xl text-left space-y-3 shadow-xl">
+        <div class="classified-stamp">CASE FILE REVEALED // 檔案解密</div>
+        <h3 class="text-lg font-black text-amber-300 font-serif-tc">{{ mobileGameState.scenarioName }}</h3>
+        <p class="text-xs text-slate-300 bg-slate-950/90 p-3 rounded-xl border border-slate-800 leading-relaxed">
+          {{ mobileGameState.debriefSummary }}
+        </p>
+        <div class="pt-2 text-center text-xs text-amber-400 font-bold">
+          請抬頭與全班同學共同展開歷史思辨與討論！
+        </div>
+      </section>
+
+    </main>
+
+    <!-- ====================================================================== -->
+    <!-- 遊戲規則與教學指引彈窗 (Rules Modal) -->
+    <!-- ====================================================================== -->
+    <div v-if="showRulesModal" class="fixed inset-0 bg-black/85 flex items-center justify-center p-4 z-50 backdrop-blur-md" @click.self="showRulesModal = false">
+      <div class="woodcut-card rounded-2xl max-w-2xl w-full p-6 shadow-2xl text-left space-y-4 border border-amber-600/50 max-h-[90vh] overflow-y-auto">
+        <div class="flex justify-between items-center pb-2 border-b border-slate-800">
+          <h3 class="text-base md:text-lg font-black text-amber-300 font-serif-tc flex items-center gap-2">
+            <span>📖</span> 《暗夜微光》遊戲規則與歷史教學指南
+          </h3>
+          <button @click="showRulesModal = false" class="text-slate-400 hover:text-white font-bold px-2 py-1">✕</button>
+        </div>
+
+        <div class="text-xs text-slate-300 space-y-3 leading-relaxed">
+          <div class="p-3 bg-slate-950/90 rounded-xl border border-slate-800 space-y-1.5">
+            <div class="font-bold text-amber-400 text-sm">💡 核心玩法機制（歷史版間諜危機 / Spyfall）</div>
+            <p>全班每位同學會收到一張機密身分卡。所有人身處同一個<b>真實歷史抗爭據點</b>，並擁有各自的角色職責。</p>
+            <p><b>但是，全班之中有一位「潛伏特務線民」！</b>線民並不知道今晚身在何處，只知道自己身負刺探任務。</p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div class="p-3 bg-emerald-950/30 rounded-xl border border-emerald-700/50 space-y-1">
+              <div class="font-bold text-emerald-300">👥 平民陣營任務（反抗者）</div>
+              <ul class="list-disc pl-4 space-y-1 text-slate-300 text-[11px]">
+                <li>透過隱晦、充滿暗喻的問答，確認彼此是不是同伴。</li>
+                <li><b>切忌直白說出地名與關鍵字！</b>否則特務線民會立刻猜出據點。</li>
+                <li>在質詢時間內揪出回答支吾其詞的潛伏特務線民。</li>
+              </ul>
+            </div>
+
+            <div class="p-3 bg-red-950/30 rounded-xl border border-red-700/50 space-y-1">
+              <div class="font-bold text-red-300">🕵️ 特務線民任務（搜集情資）</div>
+              <ul class="list-disc pl-4 space-y-1 text-slate-300 text-[11px]">
+                <li>隱藏身分，順著大家的回答裝懂、融入情境。</li>
+                <li>仔細聆聽同學的隱語，從蛛絲馬跡拼湊出真實歷史據點。</li>
+                <li>若被指認，只要能準確猜出據點，即可反敗為勝！</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="p-3 bg-slate-950/90 rounded-xl border border-amber-900/40 text-[11px] text-amber-200/90 space-y-1">
+            <div class="font-bold text-amber-300">🕯️ 轉型正義歷史教育意涵：</div>
+            <p>體驗戒嚴與威權體制下，人與人之間信任被撕裂的恐懼氛圍；理解在白色恐怖與殖民高壓統治下，前人為爭取民主自由、自治人權與言論自由所付出的勇氣與沉重代價。</p>
+          </div>
+        </div>
+
+        <div class="flex justify-end pt-2 border-t border-slate-800">
+          <button @click="showRulesModal = false" class="px-5 py-2 bg-amber-600 hover:bg-amber-500 text-slate-950 font-bold text-xs rounded-xl shadow">
+            我明白了，開始遊戲
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====================================================================== -->
+    <!-- 課堂連線故障排除與網址自訂彈窗 (Network Help Modal) -->
+    <!-- ====================================================================== -->
+    <div v-if="showNetHelpModal" class="fixed inset-0 bg-black/85 flex items-center justify-center p-4 z-50 backdrop-blur-md" @click.self="showNetHelpModal = false">
+      <div class="woodcut-card rounded-2xl max-w-lg w-full p-6 shadow-2xl text-left space-y-4 border border-slate-700">
+        <div class="flex justify-between items-center pb-2 border-b border-slate-800">
+          <h3 class="text-base font-bold text-amber-300 flex items-center gap-2">
+            ⚙️ 班級手機連線指引與網址設定
+          </h3>
+          <button @click="showNetHelpModal = false" class="text-slate-400 hover:text-white font-bold">✕</button>
+        </div>
+
+        <div class="text-xs text-slate-300 space-y-3 leading-relaxed">
+          <p>
+            <b>為什麼手機掃描會無法連線？</b><br>
+            當本檔案直接在電腦本機打開時，網址為 <code class="bg-slate-950 px-1 py-0.5 rounded text-amber-300 font-mono-code">file:///</code> 或 <code class="bg-slate-950 px-1 py-0.5 rounded text-amber-300 font-mono-code">localhost</code>，外部手機無法解析這個路徑。
+          </p>
+
+          <div class="p-3 bg-slate-950/90 rounded-xl border border-slate-800 space-y-2">
+            <div class="font-bold text-sky-400">最佳解決方案（三擇一）：</div>
+            <ol class="list-decimal pl-4 space-y-1.5 text-slate-300">
+              <li><b>雲端部署（推薦，最穩定）</b>：將此單一 HTML 檔案上傳到 GitHub Pages、Netlify、Vercel 等免費靜態空間，手機掃碼即刻連通。</li>
+              <li><b>教室區網 IP 連線</b>：若電腦使用 Live Server 或 Python 伺服器開啟，可在下方輸入你的電腦區網 IP（如 <code class="text-amber-300 font-mono-code">http://192.168.1.5:5500</code>），QR Code 會立刻更新。</li>
+              <li><b>單機傳閱模式</b>：無網路環境下，直接在大螢幕點選同學名字進行私密翻牌，免手機亦可暢玩！</li>
+            </ol>
+          </div>
+
+          <!-- 自訂基礎網址覆寫 -->
+          <div class="space-y-1">
+            <label class="font-semibold text-slate-300">自訂連線基礎網址 (Base URL)：</label>
+            <input 
+              v-model="customBaseUrl" 
+              placeholder="例如：https://my-school.github.io/game 或 http://192.168.1.100:8080"
+              class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500 font-mono-code"
+            />
+            <p class="text-[11px] text-slate-500">修改後 QR Code 與分享連結將立即套用此網址。</p>
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-2 border-t border-slate-800">
+          <button @click="applyCustomBaseUrl" class="px-5 py-2 bg-amber-600 hover:bg-amber-500 text-slate-950 font-bold text-xs rounded-xl shadow">
+            套用並更新 QR Code
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 私密身分卡檢視彈窗 (大螢幕單機防窺 Modal) -->
+    <div v-if="activeCardModalPlayer" class="fixed inset-0 bg-black/85 flex items-center justify-center p-4 z-50 backdrop-blur-sm" @click.self="closeSecretCardModal">
+      <div class="woodcut-card p-6 rounded-2xl max-w-md w-full shadow-2xl text-center border border-amber-600/50">
+        <div class="classified-stamp mb-2">CONFIDENTIAL DOSSIER</div>
+        <div class="text-sm text-slate-300 font-bold mb-1">【{{ activeCardModalPlayer.name }}】的私密情資卡</div>
+        <p class="text-[11px] text-slate-400 mb-4">請確認周遭無人偷看後，點擊按鈕翻開身分</p>
+
+        <!-- 未翻開 -->
+        <div v-if="!isCardFlipped" class="py-12 bg-slate-950/90 rounded-2xl border border-slate-800 flex flex-col items-center justify-center">
+          <div class="text-5xl mb-3">🔒</div>
+          <button @click="isCardFlipped = true" class="px-6 py-3 bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-slate-950 font-black text-xs rounded-xl shadow-lg transition active:scale-95">
+            點擊翻開身分卡
+          </button>
+        </div>
+
+        <!-- 翻開後 -->
+        <div v-else class="rounded-2xl border overflow-hidden text-left" :class="activeCardModalPlayer.isSpy ? 'bg-red-950/40 border-red-700' : 'bg-amber-950/30 border-amber-600'">
+          <div class="woodcut-frame h-40 w-full flex items-center justify-center relative">
+            <div v-if="!activeCardModalPlayer.isSpy" class="w-full h-full" v-html="getScenarioSvg(currentScenario.id, false)"></div>
+            <div v-else class="w-full h-full bg-[#080d18] flex flex-col items-center justify-center text-center p-4">
+              <span class="text-4xl mb-1">🕵️</span>
+              <span class="text-xs font-mono-code text-red-400 tracking-wider font-bold">【極機密・情資搜集任務中】</span>
+              <span class="text-[10px] text-slate-400 mt-1">地點未明・注意周遭暗語拼湊據點</span>
+            </div>
+            <div class="absolute bottom-2 left-3 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider backdrop-blur" :class="activeCardModalPlayer.isSpy ? 'bg-red-900/80 text-red-200 border border-red-600' : 'bg-black/75 text-amber-300 border border-amber-600/50'">
+              {{ activeCardModalPlayer.isSpy ? '潛伏線民' : currentScenario.eraName }}
+            </div>
+          </div>
+
+          <div class="p-4 space-y-2">
+            <div>
+              <div class="text-[10px] uppercase font-bold tracking-wider" :class="activeCardModalPlayer.isSpy ? 'text-red-400' : 'text-amber-400'">
+                {{ activeCardModalPlayer.isSpy ? '身分：機密線民' : '秘密據點' }}
+              </div>
+              <div class="text-lg font-black text-white leading-tight font-serif-tc">
+                {{ activeCardModalPlayer.isSpy ? '？？？（尚未知曉據點，請套話刺探）' : currentScenario.name }}
+              </div>
+            </div>
+
+            <div class="text-xs text-slate-200 bg-slate-950/80 p-3 rounded-xl border border-slate-700/60">
+              <div class="font-bold text-amber-300 mb-0.5">
+                角色職稱：{{ activeCardModalPlayer.isSpy ? currentScenario.spy.name : activeCardModalPlayer.assignedRole?.name }}
+              </div>
+              <div class="text-[11px] text-slate-300 leading-relaxed">
+                <b>任務指示：</b>{{ activeCardModalPlayer.isSpy ? currentScenario.spy.objective : activeCardModalPlayer.assignedRole?.description }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-5 flex justify-end gap-2">
+          <button @click="closeSecretCardModal" class="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-xs font-semibold rounded-xl text-slate-200 transition">
+            我已記住，蓋牌關閉
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 歷史畫報繪卷圖鑑彈窗 (Gallery Modal) -->
+    <div v-if="isGalleryOpen" class="fixed inset-0 bg-black/85 flex items-center justify-center p-4 z-50 backdrop-blur-md" @click.self="closeGalleryModal">
+      <div class="woodcut-card rounded-2xl max-w-5xl w-full max-h-[92vh] flex flex-col shadow-2xl overflow-hidden border border-amber-600/50">
+        <div class="p-4 border-b border-slate-800 flex justify-between items-center bg-[#070c17]">
+          <div>
+            <h3 class="text-base font-bold text-amber-300 flex items-center gap-2 font-serif-tc">
+              <span>📜</span> 歷史情境繪卷圖鑑（共 14 幅手繪主題）
+            </h3>
+            <p class="text-[11px] text-slate-400">點選不同情境卡檢視專屬木刻風格插畫、平民角色編制與歷史背景考證</p>
+          </div>
+          <button @click="closeGalleryModal" class="text-slate-400 hover:text-white px-2 py-1 text-sm font-bold">✕ 關閉</button>
+        </div>
+
+        <div class="flex-1 overflow-y-auto p-5 grid grid-cols-1 md:grid-cols-12 gap-6">
+          <!-- 左側情境列表 -->
+          <div class="md:col-span-4 space-y-1.5 max-h-[72vh] overflow-y-auto pr-1">
+            <button 
+              v-for="s in candidateScenarios" 
+              :key="s.id"
+              @click="selectedGalleryScenario = s"
+              class="w-full text-left p-3 rounded-xl border text-xs transition flex flex-col gap-0.5"
+              :class="selectedGalleryScenario?.id === s.id ? 'bg-amber-950/70 border-amber-500 text-amber-200 shadow-md ring-1 ring-amber-500/40' : 'bg-slate-900/80 border-slate-800 text-slate-300 hover:bg-slate-800'"
+            >
+              <div class="flex justify-between items-center">
+                <span class="font-bold truncate">{{ s.name }}</span>
+                <span class="text-[9px] px-1.5 py-0.5 rounded bg-black/50 text-amber-400/80">{{ s.eraName.slice(0, 4) }}</span>
+              </div>
+              <span class="text-[10px] text-slate-400 truncate">{{ s.debrief.historicalEvent }}</span>
+            </button>
+          </div>
+
+          <!-- 右側插畫與詳解 -->
+          <div v-if="selectedGalleryScenario" class="md:col-span-8 flex flex-col gap-4">
+            <div class="woodcut-frame rounded-2xl overflow-hidden aspect-[16/9] shadow-2xl flex items-center justify-center border border-amber-500/40">
+              <div class="w-full h-full" v-html="getScenarioSvg(selectedGalleryScenario.id, true)"></div>
+            </div>
+
+            <div class="space-y-3">
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="text-[10px] px-2.5 py-0.5 rounded-full bg-amber-950 border border-amber-600/60 text-amber-300 font-bold">
+                    {{ selectedGalleryScenario.eraName }}
+                  </span>
+                  <h4 class="text-xl font-black text-white font-serif-tc">{{ selectedGalleryScenario.name }}</h4>
+                </div>
+                <p class="text-xs text-sky-400 mt-1 font-medium">原型歷史：{{ selectedGalleryScenario.debrief.historicalEvent }}</p>
+              </div>
+
+              <div>
+                <div class="text-[11px] font-bold text-slate-300 mb-1.5">👥 平民角色分工：</div>
+                <div class="grid grid-cols-2 gap-1.5">
+                  <div v-for="r in selectedGalleryScenario.roles" :key="r.name" class="p-2 bg-slate-950/90 rounded-lg border border-slate-800 text-[11px]">
+                    <div class="font-bold text-amber-300">{{ r.name }}</div>
+                    <div class="text-[10px] text-slate-400 line-clamp-2">{{ r.description }}</div>
+                  </div>
+                </div>
+              </div>
+
+              <p class="text-xs text-slate-300 bg-slate-950/90 p-3 rounded-xl border border-slate-800 leading-relaxed">
+                {{ selectedGalleryScenario.debrief.summary }}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 底部教學者除錯控制板 -->
+    <footer v-if="!isMobileView" class="bg-[#070c17]/95 border-t border-slate-800/90 px-6 py-2.5 flex flex-wrap justify-between items-center text-xs gap-2 select-none z-20">
+      <div class="flex items-center gap-1.5 flex-wrap">
+        <span class="text-slate-500 font-semibold">快速跳轉階段：</span>
+        <button 
+          v-for="st in ['LOBBY', 'ROLE_REVEAL', 'INQUIRY', 'VOTING', 'DEBRIEF']" 
+          :key="st" 
+          @click="setStatus(st)"
+          :class="currentStatus === st ? 'bg-amber-500 text-slate-950 font-bold' : 'bg-slate-800/90 text-slate-300 hover:bg-slate-700'"
+          class="px-2.5 py-0.5 rounded text-[11px] transition border border-slate-700 font-mono-code"
+        >
+          {{ st }}
+        </button>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <span class="text-slate-500 font-semibold">鍵盤快捷鍵：</span>
+        <span class="text-[10px] text-slate-400 font-mono-code bg-slate-900 px-1.5 py-0.5 rounded border border-slate-800">Space: 暫停計時</span>
+        <span class="text-[10px] text-slate-400 font-mono-code bg-slate-900 px-1.5 py-0.5 rounded border border-slate-800">M: 靜音</span>
+        <span class="text-[10px] text-slate-400 font-mono-code bg-slate-900 px-1.5 py-0.5 rounded border border-slate-800">F: 全螢幕</span>
+      </div>
+    </footer>
+
+  </div>
+
+  <script>
+    const { createApp, ref, computed, watch, onMounted, onUnmounted, nextTick } = Vue;
+
+    // 完整 14 道歷史主題情境資料庫
+    const SCENARIOS = [
+      {
+        id: "white_terror_01",
+        era: "white_terror",
+        eraName: "白色恐怖時期",
+        name: "牯嶺街老宅的深夜讀書會",
+        spy: { name: "校園保防學生（抓耙仔）", objective: "刺探今晚聚會到底在閱讀、謄寫哪一本違禁書籍或思想譯作" },
+        roles: [
+          { name: "導讀學長", description: "挑選今晚閱讀的哲學譯著，手邊放著偽裝成普通國文課本的外皮。" },
+          { name: "防空洞把風者", description: "蹲在巷口雜貨店門口吃冰，若看見吉普車或便衣便吹口哨警示。" },
+          { name: "筆記謄寫手", description: "將討論重點抄在極薄的洋蔥紙上，遇突發狀況可直接吞嚥或燒毀。" },
+          { name: "外文系翻譯", description: "將外國雜誌刊登的社會批判文章翻成中文，草稿不敢署名。" },
+          { name: "油燈剪芯人", description: "控制室內微弱光源，隨時留意窗簾有沒有拉死、光線有無外漏。" },
+          { name: "借書管理員", description: "負責把禁書藏在老宅榻榻米暗格內，暗記誰借走哪一本。" }
+        ],
+        debrief: {
+          historicalEvent: "1950年代初期黎明讀書會案、臺灣大學學生支部案與四六事件",
+          summary: "戒嚴初期，許多大專院校與中學師生僅因私下借閱魯迅、巴金、社會主義相關書籍或外國思潮，便被扣上「為匪宣傳」或「參加叛亂組織」罪名遭判重刑甚至槍決。",
+          reflectionQuestion: "今天我們在書店與網路能自由閱讀任何思潮的書籍，這項理所當然的自由在當年為何會讓人付出生命的代價？"
+        }
+      },
+      {
+        id: "white_terror_02",
+        era: "white_terror",
+        eraName: "白色恐怖時期",
+        name: "防空洞裡的地下油印機",
+        spy: { name: "警備總部便衣特務", objective: "刺探地下室正在印製哪一份未經審查的地下刊物與運送路線" },
+        roles: [
+          { name: "鋼板刻字手", description: "右手長滿厚繭，用鋼針在蠟紙上一字一句刻劃批評時政的文章。" },
+          { name: "油墨調配工", description: "雙手沾滿洗不掉的黑墨，負責把油墨均勻推在滾筒上運作。" },
+          { name: "青菜貨車司機", description: "把剛印好的雜誌藏在載運高麗菜的竹簍底下，清晨四點開出城送貨。" },
+          { name: "雜誌總編輯", description: "文章全部使用化名筆名，隨身攜帶一筆用於緊急交保的現金。" },
+          { name: "發行聯絡員", description: "在公用電話亭用暗號聯絡各縣市秘密書攤老闆，每講一分鐘換一次硬幣。" },
+          { name: "巷口盯梢少年", description: "假裝在騎樓打彈珠，暗中觀察有無可疑吉普車或便衣人員徘徊。" }
+        ],
+        debrief: {
+          historicalEvent: "1970至1980年代美麗島雜誌、八十年代與自由時代週刊查禁事件",
+          summary: "警備總部對未經思想審查的出版品實施全面查扣與停刊。黨外雜誌社發展出登記多張執照接力出刊、在秘密印刷廠連夜印製並藏入菜車送往全臺書攤的反制策略。",
+          reflectionQuestion: "當國家機器全面掌控報紙、廣播與電視時，人民要如何辨別社會現實的真相？"
+        }
+      },
+      {
+        id: "white_terror_03",
+        era: "white_terror",
+        eraName: "白色恐怖時期",
+        name: "阿里山深處的高山自治會議",
+        spy: { name: "部落滲透線民", objective: "刺探今晚高山深處的秘密會議正研議哪項原住民族自治與經濟自主方案" },
+        roles: [
+          { name: "部落菁英領袖", description: "受現代教育的高等知識分子，正草擬改善山地衛生、農業合作與教育的計畫書。" },
+          { name: "山林獵人巡守", description: "熟悉每一條獵徑，負責在制高點警戒，辨別林間是否有陌生腳步聲。" },
+          { name: "公學校教師", description: "記錄會議發言，希望能將族語保存並編纂成新的母語教學教材。" },
+          { name: "部落衛生所護士", description: "準備急救醫藥箱，名義上巡迴聚落為族人注射疫苗與義診以掩護集會。" },
+          { name: "農產供銷幹事", description: "清點部落共同集資購買的肥料與農具，推動山地農林經濟自主合作。" },
+          { name: "祭典吟唱長老", description: "在屋外生火烤肉進行傳統祈福儀式，為室內的重要會議提供掩護。" }
+        ],
+        debrief: {
+          historicalEvent: "1954年高一生（吾雍·雅達烏猶）、湯守仁、樂信·瓦旦等原住民菁英受難案",
+          summary: "戰後第一代原住民族知識分子倡議高山族自治與經濟改善。但在冷戰與反共氛圍下，情治當局以「山地叛亂」罪名將這群極具望重的原住民領袖逮捕並集體槍決。",
+          reflectionQuestion: "為什麼威權體制往往特別防範擁有群眾威信與自主改革倡議能力的少數族群領袖？"
+        }
+      },
+      {
+        id: "white_terror_04",
+        era: "white_terror",
+        eraName: "白色恐怖時期",
+        name: "小鎮照相館的紅光暗房",
+        spy: { name: "領取檢舉獎金的鄰里眼線", objective: "刺探照相館內正在沖洗翻拍哪一張涉及敏感文字或管制區域的照片" },
+        roles: [
+          { name: "相館老店東", description: "在櫃檯應付常客，反覆核對取件單姓名，深怕登記錯誤惹來橫禍。" },
+          { name: "暗房顯影技師", description: "在紅光下浸泡相紙，小心翼翼沖洗背景拍到軍港管制區的生活照。" },
+          { name: "底片修片學徒", description: "用毛筆在負片上細修人像，剛好在抽屜翻到客人要求翻拍的大陸舊家書。" },
+          { name: "女中美術老師", description: "委託沖洗畫作的顧客，神色緊張地等候，深怕畫中諷刺意象被旁人看穿。" },
+          { name: "門口取件夥計", description: "負責打包相片，同時警惕打量每一個進店東張西望的生面孔。" },
+          { name: "送貨自行車伕", description: "穿梭各器材行調度藥水，沿途經常聽見街頭廣播播放保密防諜宣傳警語。" }
+        ],
+        debrief: {
+          historicalEvent: "柯旗化案與戒嚴時期《戡亂時期檢肅匪諜條例》檢舉獎金體制",
+          summary: "威權時期訂立高額檢舉匪諜獎金，在同儕競爭、私人恩怨或單純一封泛黃家書的情況下，許多市井小民即遭密告並被扣上叛亂嫌疑入獄受難。",
+          reflectionQuestion: "當舉報告密可以換取金錢利益或升遷時，社會中人與人之間的信任關係會面臨什麼崩解？"
+        }
+      },
+      {
+        id: "white_terror_05",
+        era: "white_terror",
+        eraName: "白色恐怖時期",
+        name: "火燒島打石場的夾帶紙條",
+        spy: { name: "牢房臥底線民（爪子）", objective: "刺探難友正在利用勞役縫隙傳遞哪一張秘密字條或思想動態" },
+        roles: [
+          { name: "打石場重勞役者", description: "在烈日下用十字鎬敲擊珊瑚礁石，利用敲石巨響掩護微弱交談聲。" },
+          { name: "醫務室外役犯", description: "在各中隊分發藥品，暗中將極薄的小字條摺疊塞入藥包內層傳遞。" },
+          { name: "克難房刺繡工", description: "製作外銷手工藝時，用不同色澤棉線繡出只有難友看得懂的代號。" },
+          { name: "菜園挑水外役", description: "清理豬圈堆肥，暗中在泥土暗坑裡取出被塑膠布包好的秘密便條。" },
+          { name: "公館伙食兵", description: "負責推送飯菜桶至各監房，把藏有小抄的窩窩頭放在指定暗號位置。" },
+          { name: "獄中互助會長", description: "深夜就寢後，利用牆壁輕敲敲擊聲（壁語代碼）傳遞今日最新判決動態。" }
+        ],
+        debrief: {
+          historicalEvent: "1953至1956年綠島新生訓導處「獄中再叛亂案」（陳智雄、宋景松等案）",
+          summary: "關押於綠島的政治犯僅因私下抄寫筆記、傳遞慰問紙條或拒絕刺字宣誓，被特務羅織為「在監獄中繼續組織叛亂」，導致多名原本刑期將滿的難友遭改判死刑槍決。",
+          reflectionQuestion: "若人在高壓監禁中傳遞一張求生互助紙條都能被定罪為死刑叛亂，體制背後的恐懼究竟是什麼？"
+        }
+      },
+      {
+        id: "white_terror_06",
+        era: "white_terror",
+        eraName: "白色恐怖時期",
+        name: "泰源監獄刺探與起義密謀",
+        spy: { name: "警衛連滲透偵防兵", objective: "刺探難友起義計畫的奪槍時機與撤往臺東山區的具體路線" },
+        roles: [
+          { name: "外役起義策劃人", description: "在醫務室與菜園之間串聯，草擬宣告臺灣獨立與號召各界起義的文告。" },
+          { name: "電台通訊士難友", description: "暗中研究警衛連無線電機頻率，準備奪取廣播站向海外拍發宣言。" },
+          { name: "軍械庫繪圖員", description: "利用服勞役機會，用炭筆精確默繪警衛連槍櫃鎖孔與子彈庫房位置。" },
+          { name: "原住民族嚮導難友", description: "熟知臺東海岸山脈深處獵徑與水源，負責規劃突圍後進入深山的隱匿點。" },
+          { name: "伙食班傳訊手", description: "在飯桶底部刻下密碼日期，向重刑犯押房傳遞全面動手代號。" },
+          { name: "鐵工廠修繕工", description: "利用銼刀將廢棄鐵條磨製成防身短刃，藏匿在車床底座油污處。" }
+        ],
+        debrief: {
+          historicalEvent: "1970年泰源事件（江炳興、鄭金河、陳良、詹天增、謝東榮、鄭正成等六人起義案）",
+          summary: "關押於臺東泰源監獄的政治犯發動奪槍起義，試圖佔領廣播電台發表獨立宣言，失敗後五人遭判死刑槍決。這場起義震動當局，隨後促成綠島綠洲山莊高牆監獄的興建。",
+          reflectionQuestion: "在完全與世隔絕的高壓軍事監獄中，受難者為何依然願意以生命為賭注嘗試抗爭？"
+        }
+      },
+      {
+        id: "white_terror_07",
+        era: "white_terror",
+        eraName: "白色恐怖時期",
+        name: "自由時代雜誌社防暴鐵門內",
+        spy: { name: "警總外圍埋伏眼線", objective: "刺探雜誌社內部是否正準備印製全新臺灣共和國憲法草案" },
+        roles: [
+          { name: "雜誌社總編輯", description: "在辦公室反鎖房門，桌上放著打字機與宣告爭取百分之百言論自由的手稿。" },
+          { name: "編輯部排版員", description: "通宵趕排最新期社論，隨時準備銷毀涉及敏感政治檔案的鉛字版。" },
+          { name: "門口值班記者", description: "守在厚重防暴鐵門貓眼前，緊盯樓梯間是否有陌生便衣特務聚集。" },
+          { name: "發行部暗袋工", description: "把剛出爐的雜誌塞進特製雙層紙箱，偽裝成普通布料準備連夜發車。" },
+          { name: "法律後援律師", description: "隨身攜帶委任狀，守在電話機旁準備應對可能隨時發生的拘提傳票。" },
+          { name: "暗房洗印助理", description: "迅速將街頭運動第一手抗爭照片顯影，深怕底片遭到情治單位沒收銷毀。" }
+        ],
+        debrief: {
+          historicalEvent: "1989年鄭南榕為爭取「百分之百的言論自由」自囚於自由時代雜誌社殉道事件",
+          summary: "鄭南榕因刊登許世楷所草擬之《臺灣共和國憲法草案》遭臺灣高等法院檢察署以叛亂罪嫌傳喚。他堅持言論自由是普世人權，自囚雜誌社71天，最終在警方強制攻堅時自焚殉難。",
+          reflectionQuestion: "「言論自由」與「國家安全」的界線應當如何衡量？當權力者以法律壓制異議時，公民有何權利反抗？"
+        }
+      },
+      {
+        id: "white_terror_08",
+        era: "white_terror",
+        eraName: "白色恐怖時期",
+        name: "溫州街深夜警總吉普車",
+        spy: { name: "鄰里保甲告密者", objective: "刺探深夜文人聚會中是否有人私藏海外民主同盟刊物或批評元首言論" },
+        roles: [
+          { name: "大學哲學教授", description: "坐在日式書房內，手握泛黃文稿，面色凝重地向門生告誡思想的責任。" },
+          { name: "青年助教", description: "正把討論大綱投入炭火火盆燒成灰燼，耳朵警惕聽著巷口動靜。" },
+          { name: "出版社編輯", description: "將海外偷帶回臺的自由主義論文用油紙包好，塞入書架夾層深處。" },
+          { name: "日式平房女主人", description: "在廚房藉泡茶名義觀察窗外，確認吉普車的大燈是否朝著自家院子照射。" },
+          { name: "外文系研究生", description: "將翻譯稿偽裝成英文文法測驗卷，假裝正在指導同窗複習課業。" },
+          { name: "巷弄腳踏車巡更人", description: "輕敲竹梆子，暗中用特定敲擊節奏向熟識街坊暗示情治便衣正在附近埋伏。" }
+        ],
+        debrief: {
+          historicalEvent: "1960年殷海光、雷震《自由中國》雜誌案與知識分子肅清案",
+          summary: "臺大哲學系教授殷海光與雷震等自由主義知識分子主張言論自由、司法獨立與反對總統連任。雷震遭逮捕入獄十年，殷海光亦被全面封殺禁止授課與出版，長期遭到特務全天候監視。",
+          reflectionQuestion: "獨立思想與知識分子的風骨，對一個民主社會的形成具有怎樣不可替代的價值？"
+        }
+      },
+      {
+        id: "228_01",
+        era: "228_incident",
+        eraName: "二二八事件",
+        name: "中山堂二二八處委會起草密室",
+        spy: { name: "保密局特務（滲透反串者）", objective: "刺探委員會正在草擬的政治改革大綱具體條文，並伺機製造激進藉口" },
+        roles: [
+          { name: "改革條綱起草人", description: "根據各地拍發電報，逐條修訂要求落實地方自治、保障人權與廢除專賣的草案。" },
+          { name: "青年學生自衛隊長", description: "手臂佩掛白布條，指揮中學生協助維持市區交通與秩序，保護外省籍平民不受波及。" },
+          { name: "報社通訊特派記者", description: "帶著速記本紀錄協商進展，準備在號外版面呼籲市民維持理性與秩序。" },
+          { name: "省參議會聯絡秘書", description: "守在長途電話機旁，向行政長官公署傳遞民意訴求，紀錄官方承諾內容。" },
+          { name: "公立醫院急救醫師", description: "協調各大醫院收治衝突傷患名單，並調度短缺的血漿與消毒敷料。" },
+          { name: "會議室登記引導員", description: "在中山堂門口查驗各界代表名冊，防範身分不明人士闖入會場挑起事端。" }
+        ],
+        debrief: {
+          historicalEvent: "1947年二二八事件處理委員會與保密局特務反串滲透",
+          summary: "衝突爆發後，各界仕紳與民意代表成立委員會尋求和平體制改革。然而情治特務暗中滲透激化訴求、製造混亂，使軍政當局取得叛亂藉口，隨後調派軍隊展開鎮壓清鄉。",
+          reflectionQuestion: "當體制內尋求和平對話的努力被刻意滲透抹黑為「叛亂」時，社會該如何守護彼此的信任？"
+        }
+      },
+      {
+        id: "228_02",
+        era: "228_incident",
+        eraName: "二二八事件",
+        name: "大肚溪畔二七部隊突圍集結點",
+        spy: { name: "軍統先遣偵察線人", objective: "刺探二七部隊今晚部隊集結規模與撤往埔里山區的具體行軍動線" },
+        roles: [
+          { name: "自衛部隊總指揮官", description: "在地圖標註隘口防線，下達部隊撤往埔里山區、避免市區開火殃及平民的指令。" },
+          { name: "軍械接收掌管員", description: "清點從營區接收的步槍與彈藥箱，依編制發放至各青年中隊。" },
+          { name: "學生救護分隊長", description: "帶領女中學生整理野戰急救繃帶與水壺，隨部隊行動照護傷員。" },
+          { name: "木炭卡車司機", description: "以手搖柄發動改裝卡車，負責將糧食與傷患連夜載往烏牛欄前線防區。" },
+          { name: "鐵道橋墩瞭望哨", description: "伏臥在橋墩草叢中，用望遠鏡緊盯是否有政府軍先遣部隊沿鐵路推進。" },
+          { name: "市民糧食籌備幹事", description: "清點臺中仕紳與商行秘密募集的白米與物資，確保自衛部隊的基本補給。" }
+        ],
+        debrief: {
+          historicalEvent: "1947年二二八事件臺中二七部隊與烏牛欄之役",
+          summary: "臺中市民與青年學生組成二七部隊維持地方治安。得知國軍主力部隊逼近後，部隊為避免市區化為焦土殃及平民，主動撤至埔里山區抵抗，展現堅毅的鄉土守護決心。",
+          reflectionQuestion: "二七部隊主動決定將戰線移出市區以避免平民傷亡，這項決策背後體現了怎樣的公民道德？"
+        }
+      },
+      {
+        id: "228_03",
+        era: "228_incident",
+        eraName: "二二八事件",
+        name: "府城湯德章律師事務所",
+        spy: { name: "軍警特務先遣密探", objective: "刺探湯德章律師桌上藏匿的臺南二二八處委會青年學生與治安隊名冊" },
+        roles: [
+          { name: "人權律師湯德章", description: "在辦公桌前爭分奪秒將臺南治安維持會全體學生青年名冊投入鐵爐燒毀。" },
+          { name: "律師事務所書記", description: "把重要法律公文鎖進防潮鐵櫃，並協助律師將爐火灰燼攪碎銷毀。" },
+          { name: "參議會引薦青年", description: "神色慌張前來通報軍隊已由高雄北上逼近市區，勸律師先行避難。" },
+          { name: "門口候車黃包車夫", description: "守在騎樓下拉緊車篷，警戒街口是否有軍用大卡車駛來。" },
+          { name: "臺南工學院學生", description: "曾在治安隊值勤，深知名冊若落入軍警手中全體同窗都將遭到逮捕。" },
+          { name: "隔壁茶莊店東", description: "隔著木窗觀察街面動靜，隨時準備掩護事務所人員從後門巷弄撤離。" }
+        ],
+        debrief: {
+          historicalEvent: "1947年臺南人權律師湯德章殉難案",
+          summary: "湯德章律師在二二八事件中出任臺南治安組長調解衝突。軍隊進入臺南後他遭逮捕，嚴刑拷打下堅決不交出任何學生青年名冊並將其燒毀，最終在民生綠園遭公開槍決，以一人性命保全數百名青年生命。",
+          reflectionQuestion: "在生死關頭，湯德章律師堅守保護青年的抉擇，對臺灣社會的法治與人權價值帶來怎樣深刻的啟示？"
+        }
+      },
+      {
+        id: "jr01",
+        era: "japanese_rule",
+        eraName: "日治時期",
+        name: "大正文協夏日講習會與「臨監」黑板",
+        spy: { name: "總督府特高密偵（日警探子）", objective: "刺探今晚講習會是否暗中為臺灣議會設置請願運動或批評總督施政串聯" },
+        roles: [
+          { name: "文協巡迴演講員", description: "身穿長衫，準備在台上用通俗臺語向大眾宣講近代人權觀念與公衛知識。" },
+          { name: "講堂黑板抄寫手", description: "在大黑板上速寫演講要點，只要日警一舉手示意，立刻將敏感文字擦去。" },
+          { name: "巡迴讀報社青年", description: "手捧《臺灣民報》，在台下向不識字的鄉親朗讀刊載批評時政的報導。" },
+          { name: "文化劇即興演員", description: "在後台換上滑稽戲服，準備以充滿隱喻的諷刺喜劇演出官員索賄的荒謬。" },
+          { name: "講堂引路發傳單少年", description: "在門口發放手印演講傳單，若看見帶武士刀的警察前來立刻通風報信。" },
+          { name: "會場秩序維護員", description: "盯著第一排臨監席的高等警察，在警察喊叫警告時安撫群眾避免引發衝突。" }
+        ],
+        debrief: {
+          historicalEvent: "1920年代臺灣文化協會、蔣渭水啟蒙運動與1923年治警事件",
+          summary: "殖民當局依據《治安警察法》嚴密控管集會，派高等警察親臨演講現場（臨監），動輒大喊「弁士注意」或勒令「中止」。文協會員則透過讀報社、演講與諷刺文化劇進行非暴力思想啟蒙。",
+          reflectionQuestion: "當公開言論受到當權者全面封鎖管制時，青年透過啟蒙教育與戲劇隱喻，能發揮怎樣的反抗力量？"
+        }
+      },
+      {
+        id: "jr02",
+        era: "japanese_rule",
+        eraName: "日治時期",
+        name: "霧社山林獵寮深夜血盟",
+        spy: { name: "親日部落刺探者（味方蕃眼線）", objective: "刺探起義各部落計畫在何時發動突襲，以及具體的進攻目標與集結點" },
+        roles: [
+          { name: "起義核心部落領袖", description: "手握獵刀，在炭火旁向頭目們闡述捍衛族群尊嚴與越過彩虹橋的抗暴決心。" },
+          { name: "公學校工讀探路青年", description: "在公學校工讀，暗中測繪明日聯合運動會的進出動線與日籍警官席位分布。" },
+          { name: "駐在所矛盾巡查警丁", description: "身穿制服但內心掙扎，暗中提供駐在所軍械庫鑰匙印模以策應族人。" },
+          { name: "火藥研磨獵手", description: "用陶罐磨製獵槍火藥，暗中清點各家族保存的自製獵槍與鉛彈存量。" },
+          { name: "織布警戒婦人", description: "坐在獵寮門口假裝借月光織布，耳朵仔細辨別林間是否有親日密探的異常腳步聲。" },
+          { name: "深山老弱遷徙引路人", description: "負責連夜將部落婦孺引導至斷崖岩窟天險處藏匿，以防戰火波及。" }
+        ],
+        debrief: {
+          historicalEvent: "1930年霧社事件（莫那·魯道率賽德克族六部落抗日）",
+          summary: "殖民當局實施嚴苛理蕃政策，強加沉重勞役並禁止傳統習俗，基層警察侮辱族人事件頻傳，最終引發抗暴。日本軍警動用現代武力與毒氣鎮壓，造成族群重大傷亡。",
+          reflectionQuestion: "跳脫以統治者「文明與野蠻」的視角，從被殖民的原住民族主體出發，這場抗暴的核心價值在捍衛什麼？"
+        }
+      },
+      {
+        id: "jr03",
+        era: "japanese_rule",
+        eraName: "日治時期",
+        name: "二林蔗田旁破廟暗會",
+        spy: { name: "製糖會社御用爪牙", objective: "刺探蔗農今晚是否正串聯全面拒絕採收（罷割罷運）以抵制會社收購價" },
+        roles: [
+          { name: "蔗農組合常務幹事", description: "地方仕紳，正草擬準備向製糖會社遞交的甘蔗收購價格爭取書。" },
+          { name: "過磅監督老農夫", description: "手持特製秤錘，計畫在採收日親自監督會社地秤，防範技師暗中偷斤減兩。" },
+          { name: "牛車運輸班長", description: "召集數十名牛車伕，暗中約定若會社不公佈合理價格全體車隊即刻停運。" },
+          { name: "文協法律聲援青年", description: "從北部南下的法律專員，向農民說明依據法律集體維護勞動權益的爭議程序。" },
+          { name: "甘蔗田巡守少年", description: "赤腳穿梭在比人高的蔗田間，手握竹哨，警戒是否有會社打手前來破壞暗會。" },
+          { name: "農家互助婦女", description: "提大茶壺為開會農友倒茶，口袋備妥各家籌集的罷割期間緊急米糧券。" }
+        ],
+        debrief: {
+          historicalEvent: "1925年二林蔗農事件（李應章醫師領導臺灣農民運動春雷）",
+          summary: "殖民糖業透過壟斷市場強加單方面定價，俗稱「第一憨，種甘蔗予糖廠磅」。蔗農組織組合抗爭爭取公道，遭到警察拔刀流血鎮壓，多人被捕入獄。",
+          reflectionQuestion: "當大財閥與國家公權力聯手制定不公平的經濟遊戲規則時，基層勞動者除了團結互助，還能有哪些抗爭途徑？"
+        }
+      }
+    ];
+
+    // 質詢破冰試探錦囊提問庫（解決課堂不知道怎麼問的痛點）
+    const INQUIRY_PROMPTS = [
+      "「你在這個地方最常聞到什麼氣味？是墨水、海風、泥土還是紙張？」",
+      "「如果突然有一隊陌生人衝進來，你會第一時間把手上的東西藏去哪裡？」",
+      "「你今天出門前，有沒有向家人或鄰居編造什麼藉口？」",
+      "「在你的視線範圍內，周圍的光線是明亮、昏暗、還是只有一盞微弱小燈？」",
+      "「你剛才跟身邊的同伴說話時，是用什麼音量？敢大聲交談嗎？」",
+      "「你手裡握著的工具是金屬、紙張、木頭、布料還是泥土？」",
+      "「如果你要從這裡離開，門口有沒有人在把風或監視？」",
+      "「如果有一張照片記錄下此時此刻的你，照片裡的你正在做什麼動作？」",
+      "「這個據點的溫度是悶熱流汗、潮濕陰涼、還是吹著刺骨冷風？」",
+      "「周圍有聽到任何奇怪的背景聲音嗎？例如機器運轉聲、海浪聲還是吉普車聲？」",
+      "「你在這裡待了一整晚，最擔心發生什麼突發狀況？」",
+      "「你現在身上穿著的衣服，看起來像是學生、農民、勞工還是體面讀書人？」"
+    ];
+
+    createApp({
+      setup() {
+        // 模式判定：若 URL 帶有 #room= 或 ?room= 則自動切換為手機玩家專用視圖
+        const urlParams = new URLSearchParams(window.location.search);
+        const hashMatch = window.location.hash.match(/room=([^&]+)/);
+        const targetRoomFromUrl = urlParams.get('room') || (hashMatch ? hashMatch[1] : null);
+
+        const isMobileView = ref(Boolean(targetRoomFromUrl));
+        const mobileRoomTarget = ref(targetRoomFromUrl || "");
+
+        // 隨機產生房號
+        const randomRoomCode = "TW-" + Math.floor(1000 + Math.random() * 9000);
+        const roomCode = ref(randomRoomCode);
+
+        // 判定是否為本地檔案協議
+        const isLocalFileProtocol = ref(window.location.protocol === 'file:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+        const customBaseUrl = ref(
+          isLocalFileProtocol.value 
+            ? "https://tw-justice-game.edu.tw" 
+            : window.location.origin + window.location.pathname
+        );
+        const showNetHelpModal = ref(false);
+        const showRulesModal = ref(false);
+        const isFullscreen = ref(false);
+
+        // 動態計算產生 QR Code 的加入網址
+        const joinUrl = computed(() => {
+          let base = customBaseUrl.value.trim().replace(/\/$/, "");
+          return `${base}#room=${roomCode.value}`;
+        });
+
+        const copyJoinUrl = () => {
+          const el = document.createElement('textarea');
+          el.value = joinUrl.value;
+          document.body.appendChild(el);
+          el.select();
+          document.execCommand('copy');
+          document.body.removeChild(el);
+          alert("✓ 已成功複製手機加入連結：\n" + joinUrl.value);
+        };
+
+        const applyCustomBaseUrl = () => {
+          showNetHelpModal.value = false;
+          renderQR();
+        };
+
+        // 全螢幕切換
+        const toggleFullScreen = () => {
+          if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen().then(() => {
+              isFullscreen.value = true;
+            }).catch(() => {});
+          } else {
+            if (document.exitFullscreen) {
+              document.exitFullscreen().then(() => {
+                isFullscreen.value = false;
+              }).catch(() => {});
+            }
+          }
+        };
+
+        // 大螢幕狀態
+        const currentStatus = ref("LOBBY");
+        const selectedEra = ref("ALL");
+        const roundTimeConfig = ref(480);
+        const timeRemaining = ref(480);
+        const isPaused = ref(false);
+        const isMuted = ref(false);
+        const audioUnlocked = ref(false);
+
+        // 質詢錦囊提問
+        const inquiryPromptIdx = ref(0);
+        const currentInquiryPrompt = computed(() => INQUIRY_PROMPTS[inquiryPromptIdx.value % INQUIRY_PROMPTS.length]);
+        const drawNextPrompt = () => {
+          inquiryPromptIdx.value = (inquiryPromptIdx.value + 1) % INQUIRY_PROMPTS.length;
+          playClick();
+        };
+
+        // 預設學員名冊（混合模式支援）
+        const players = ref([
+          { id: "p1", name: "林志銘", isSpy: false, hasCheckedCard: false, isRemote: false },
+          { id: "p2", name: "陳秀美", isSpy: false, hasCheckedCard: false, isRemote: false },
+          { id: "p3", name: "王敬學", isSpy: false, hasCheckedCard: false, isRemote: false },
+          { id: "p4", name: "柯冠宇", isSpy: false, hasCheckedCard: false, isRemote: false },
+          { id: "p5", name: "張雅文", isSpy: false, hasCheckedCard: false, isRemote: false },
+          { id: "p6", name: "蔡培生", isSpy: false, hasCheckedCard: false, isRemote: false }
+        ]);
+        const newPlayerName = ref("");
+
+        const currentScenario = ref(SCENARIOS[0]);
+        const candidateScenarios = computed(() => {
+          if (selectedEra.value === "ALL") return SCENARIOS;
+          return SCENARIOS.filter(s => s.era === selectedEra.value);
+        });
+
+        // 提問對象與投票
+        const activeAsker = ref("林志銘");
+        const activeAnswerer = ref("陳秀美");
+        const selectedVoteTargetId = ref("");
+        const votesTally = ref({});
+
+        // 彈窗狀態
+        const activeCardModalPlayer = ref(null);
+        const isCardFlipped = ref(false);
+        const isGalleryOpen = ref(false);
+        const selectedGalleryScenario = ref(SCENARIOS[0]);
+
+        // 勝負結果
+        const gameResult = ref({
+          winner: "CITIZENS",
+          reasonText: "平民成功守護據點秘密！"
+        });
+        const spyPlayer = computed(() => players.value.find(p => p.isSpy) || players.value[0]);
+
+        // 計算倒數進度環之 strokeDashoffset
+        const timerProgressOffset = computed(() => {
+          const total = roundTimeConfig.value || 480;
+          const current = Math.max(0, timeRemaining.value);
+          const circumference = 2 * Math.PI * 90;
+          return circumference * (1 - (current / total));
+        });
+
+        // ==========================================
+        // PeerJS WebRTC 免後端 P2P 多人連線核心
+        // ==========================================
+        let peer = null;
+        const p2pStatus = ref("CONNECTING");
+        const p2pStatusText = ref("連線初始化中...");
+        const remoteConnections = ref([]);
+        const connectedClientsCount = computed(() => remoteConnections.value.length);
+
+        // 手機端專屬變數
+        const mobileMyPlayer = ref(null);
+        const mobileInputName = ref("");
+        const mobileGameState = ref(null);
+        const mobileMyCard = ref(null);
+        const mobileCardRevealed = ref(false);
+        const mobileSelectedVoteId = ref("");
+        const mobileTimeRemaining = ref(480);
+
+        const mobileFormattedTime = computed(() => {
+          const m = Math.floor(mobileTimeRemaining.value / 60).toString().padStart(2, '0');
+          const s = (mobileTimeRemaining.value % 60).toString().padStart(2, '0');
+          return `${m}:${s}`;
+        });
+
+        const toggleMobileCardRevealed = () => {
+          mobileCardRevealed.value = !mobileCardRevealed.value;
+          playCardFlip();
+          if (navigator.vibrate) navigator.vibrate(30);
+        };
+
+        // 大螢幕廣播狀態給所有手機端
+        const broadcastToAllMobiles = () => {
+          if (isMobileView.value || remoteConnections.value.length === 0) return;
+
+          remoteConnections.value.forEach(conn => {
+            if (!conn.open) return;
+            const targetPlayer = players.value.find(p => p.id === conn.peerIdRef);
+            if (!targetPlayer) return;
+
+            const payload = {
+              type: "STATE_SYNC",
+              status: currentStatus.value,
+              scenarioId: currentScenario.value.id,
+              scenarioName: currentScenario.value.name,
+              eraName: currentScenario.value.eraName,
+              debriefSummary: currentScenario.value.debrief.summary,
+              timeRemaining: timeRemaining.value,
+              players: players.value.map(p => ({ id: p.id, name: p.name })),
+              myCard: {
+                isSpy: targetPlayer.isSpy,
+                scenarioName: targetPlayer.isSpy ? "【情資未明・請套話刺探】" : currentScenario.value.name,
+                eraName: currentScenario.value.eraName,
+                roleName: targetPlayer.isSpy ? currentScenario.value.spy.name : (targetPlayer.assignedRole?.name || "秘密參與者"),
+                roleDescription: targetPlayer.isSpy ? currentScenario.value.spy.objective : (targetPlayer.assignedRole?.description || "")
+              }
+            };
+            try {
+              conn.send(payload);
+            } catch (e) {
+              console.error("廣播失敗:", e);
+            }
+          });
+        };
+
+        // 初始化 PeerJS
+        const initPeer = () => {
+          if (!window.Peer) {
+            p2pStatus.value = "ERROR";
+            p2pStatusText.value = "PeerJS 套件未載入";
+            return;
+          }
+
+          if (isMobileView.value) {
+            peer = new Peer();
+            peer.on('open', (myPeerId) => {
+              connectToHost(mobileRoomTarget.value);
+            });
+            peer.on('error', (err) => {
+              console.error("[手機端] Peer 錯誤:", err);
+            });
+          } else {
+            const hostPeerId = "JUSTICE-" + roomCode.value.replace(/[^a-zA-Z0-9]/g, "");
+            peer = new Peer(hostPeerId);
+
+            peer.on('open', (id) => {
+              p2pStatus.value = "CONNECTED";
+              p2pStatusText.value = "已就緒";
+            });
+
+            peer.on('connection', (conn) => {
+              conn.on('open', () => {
+                remoteConnections.value.push(conn);
+              });
+
+              conn.on('data', (data) => {
+                handleHostReceivedData(conn, data);
+              });
+
+              conn.on('close', () => {
+                remoteConnections.value = remoteConnections.value.filter(c => c !== conn);
+              });
+            });
+
+            peer.on('error', (err) => {
+              console.warn("[大螢幕] Peer 警告 (改採單機離線模式):", err);
+              p2pStatus.value = "FALLBACK";
+              p2pStatusText.value = "單機模式";
+            });
+          }
+        };
+
+        const handleHostReceivedData = (conn, data) => {
+          if (!data || !data.type) return;
+
+          if (data.type === 'JOIN_PLAYER') {
+            conn.peerIdRef = conn.peer;
+            const existing = players.value.find(p => p.id === conn.peer);
+            if (!existing) {
+              players.value.push({
+                id: conn.peer,
+                name: data.name,
+                isSpy: false,
+                hasCheckedCard: false,
+                isRemote: true
+              });
+            } else {
+              existing.name = data.name;
+            }
+            conn.send({ type: 'JOIN_CONFIRMED', playerId: conn.peer, name: data.name });
+            broadcastToAllMobiles();
+          } else if (data.type === 'CONFIRM_CARD') {
+            const p = players.value.find(p => p.id === conn.peer);
+            if (p) p.hasCheckedCard = true;
+          } else if (data.type === 'CAST_VOTE') {
+            votesTally.value[data.targetId] = (votesTally.value[data.targetId] || 0) + 1;
+            broadcastToAllMobiles();
+          } else if (data.type === 'SPY_GUESS') {
+            submitSpyGuess(data.scenarioId);
+          }
+        };
+
+        // 手機端連線主持端
+        let mobileHostConn = null;
+        const connectToHost = (targetCode) => {
+          const hostPeerId = "JUSTICE-" + targetCode.replace(/[^a-zA-Z0-9]/g, "");
+          mobileHostConn = peer.connect(hostPeerId, { reliable: true });
+
+          mobileHostConn.on('data', (data) => {
+            if (data.type === 'JOIN_CONFIRMED') {
+              mobileMyPlayer.value = { id: data.playerId, name: data.name };
+            } else if (data.type === 'STATE_SYNC') {
+              mobileGameState.value = data;
+              mobileMyCard.value = data.myCard;
+              mobileTimeRemaining.value = data.timeRemaining;
+            }
+          });
+        };
+
+        const submitMobileJoin = () => {
+          if (!mobileInputName.value.trim() || !mobileHostConn) return;
+          mobileHostConn.send({
+            type: 'JOIN_PLAYER',
+            name: mobileInputName.value.trim()
+          });
+        };
+
+        const notifyCardChecked = () => {
+          if (mobileHostConn) {
+            mobileHostConn.send({ type: 'CONFIRM_CARD' });
+          }
+        };
+
+        const mobileCastVote = (targetId) => {
+          mobileSelectedVoteId.value = targetId;
+          playClick();
+          if (navigator.vibrate) navigator.vibrate([40, 60, 40]);
+          if (mobileHostConn) {
+            mobileHostConn.send({ type: 'CAST_VOTE', targetId });
+          }
+        };
+
+        const mobileSubmitSpyGuess = (scenarioId) => {
+          playClick();
+          if (mobileHostConn) {
+            mobileHostConn.send({ type: 'SPY_GUESS', scenarioId });
+          }
+        };
+
+        // ==========================================
+        // Web Audio API 程式化高品質音效合成器
+        // ==========================================
+        let audioCtx = null;
+        let heartbeatTimer = null;
+        let clockTimer = null;
+
+        const ensureAudioUnlocked = () => {
+          if (!audioCtx) {
+            const AudioCtx = window.AudioContext || window.webkitAudioContext;
+            if (AudioCtx) audioCtx = new AudioCtx();
+          }
+          if (audioCtx && audioCtx.state === "suspended") {
+            audioCtx.resume();
+          }
+          audioUnlocked.value = true;
+        };
+
+        const playClick = () => {
+          if (isMuted.value) return;
+          ensureAudioUnlocked();
+          if (!audioCtx) return;
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = "sine";
+          osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+          gain.gain.setValueAtTime(0.04, audioCtx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.05);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start();
+          osc.stop(audioCtx.currentTime + 0.05);
+        };
+
+        const playCardFlip = () => {
+          if (isMuted.value) return;
+          ensureAudioUnlocked();
+          if (!audioCtx) return;
+          const bufferSize = audioCtx.sampleRate * 0.12;
+          const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+          const output = noiseBuffer.getChannelData(0);
+          for (let i = 0; i < bufferSize; i++) output[i] = Math.random() * 2 - 1;
+          const whiteNoise = audioCtx.createBufferSource();
+          whiteNoise.buffer = noiseBuffer;
+          const filter = audioCtx.createBiquadFilter();
+          filter.type = "bandpass";
+          filter.frequency.setValueAtTime(1200, audioCtx.currentTime);
+          filter.frequency.exponentialRampToValueAtTime(400, audioCtx.currentTime + 0.12);
+          const gain = audioCtx.createGain();
+          gain.gain.setValueAtTime(0.18, audioCtx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.12);
+          whiteNoise.connect(filter);
+          filter.connect(gain);
+          gain.connect(audioCtx.destination);
+          whiteNoise.start();
+        };
+
+        const playHeartbeat = () => {
+          if (isMuted.value) return;
+          ensureAudioUnlocked();
+          if (!audioCtx) return;
+
+          const now = audioCtx.currentTime;
+          const createThump = (time, startFreq, endFreq, dur, vol) => {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            const filter = audioCtx.createBiquadFilter();
+
+            filter.type = "lowpass";
+            filter.frequency.setValueAtTime(95, time);
+
+            osc.type = "sine";
+            osc.frequency.setValueAtTime(startFreq, time);
+            osc.frequency.exponentialRampToValueAtTime(endFreq, time + dur);
+
+            gain.gain.setValueAtTime(0.001, time);
+            gain.gain.exponentialRampToValueAtTime(vol, time + 0.02);
+            gain.gain.exponentialRampToValueAtTime(0.001, time + dur);
+
+            osc.connect(filter);
+            filter.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            osc.start(time);
+            osc.stop(time + dur);
+          };
+
+          createThump(now, 72, 38, 0.14, 0.85);
+          createThump(now + 0.16, 58, 32, 0.16, 0.60);
+        };
+
+        const startHeartbeatLoop = (intervalMs = 1000) => {
+          stopHeartbeatLoop();
+          playHeartbeat();
+          heartbeatTimer = setInterval(playHeartbeat, intervalMs);
+        };
+
+        const stopHeartbeatLoop = () => {
+          if (heartbeatTimer) {
+            clearInterval(heartbeatTimer);
+            heartbeatTimer = null;
+          }
+        };
+
+        const playAlarm = () => {
+          if (isMuted.value) return;
+          ensureAudioUnlocked();
+          if (!audioCtx) return;
+
+          const now = audioCtx.currentTime;
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          const filter = audioCtx.createBiquadFilter();
+
+          osc.type = "sawtooth";
+          filter.type = "bandpass";
+          filter.frequency.setValueAtTime(750, now);
+          filter.Q.setValueAtTime(2.2, now);
+
+          for (let i = 0; i < 3; i++) {
+            const t = now + i * 0.5;
+            osc.frequency.setValueAtTime(420, t);
+            osc.frequency.linearRampToValueAtTime(840, t + 0.25);
+            osc.frequency.linearRampToValueAtTime(420, t + 0.5);
+          }
+
+          gain.gain.setValueAtTime(0.2, now);
+          gain.gain.setValueAtTime(0.2, now + 1.3);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 1.6);
+
+          osc.connect(filter);
+          filter.connect(gain);
+          gain.connect(audioCtx.destination);
+
+          osc.start(now);
+          osc.stop(now + 1.6);
+        };
+
+        const playDecryptionReveal = () => {
+          if (isMuted.value) return;
+          ensureAudioUnlocked();
+          if (!audioCtx) return;
+
+          const now = audioCtx.currentTime;
+          const chord = [65.41, 98.00, 130.81, 164.81, 196.00];
+          chord.forEach((freq, idx) => {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+
+            osc.type = idx === 0 ? "triangle" : "sine";
+            osc.frequency.setValueAtTime(freq, now + 0.1);
+
+            gain.gain.setValueAtTime(0.001, now + 0.1);
+            gain.gain.linearRampToValueAtTime(0.18 / chord.length, now + 0.6);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 3.5);
+
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            osc.start(now + 0.1);
+            osc.stop(now + 3.5);
+          });
+        };
+
+        const toggleMute = () => {
+          isMuted.value = !isMuted.value;
+          if (isMuted.value) stopHeartbeatLoop();
+        };
+
+        const formattedTime = computed(() => {
+          const m = Math.floor(timeRemaining.value / 60).toString().padStart(2, '0');
+          const s = (timeRemaining.value % 60).toString().padStart(2, '0');
+          return `${m}:${s}`;
+        });
+
+        const isUnderOneMinute = computed(() => {
+          return currentStatus.value === 'INQUIRY' && timeRemaining.value <= 60 && timeRemaining.value > 0;
+        });
+
+        const addPlayer = () => {
+          const name = newPlayerName.value.trim();
+          if (!name) return;
+          players.value.push({
+            id: `p_${Date.now()}`,
+            name,
+            isSpy: false,
+            hasCheckedCard: false,
+            isRemote: false
+          });
+          newPlayerName.value = "";
+          playClick();
+        };
+
+        const removePlayer = (idx) => {
+          players.value.splice(idx, 1);
+          playClick();
+        };
+
+        const startGame = () => {
+          playCardFlip();
+          const pool = candidateScenarios.value;
+          currentScenario.value = pool[Math.floor(Math.random() * pool.length)];
+
+          const spyIdx = Math.floor(Math.random() * players.value.length);
+          const shuffledRoles = [...currentScenario.value.roles].sort(() => Math.random() - 0.5);
+
+          players.value.forEach((p, idx) => {
+            p.hasCheckedCard = false;
+            p.isSpy = (idx === spyIdx);
+            p.assignedRole = p.isSpy ? undefined : shuffledRoles[idx % shuffledRoles.length];
+          });
+
+          activeAsker.value = players.value[0].name;
+          activeAnswerer.value = players.value[1].name;
+
+          setStatus('ROLE_REVEAL');
+        };
+
+        const openSecretCardModal = (p) => {
+          playCardFlip();
+          p.hasCheckedCard = true;
+          activeCardModalPlayer.value = p;
+          isCardFlipped.value = false;
+        };
+
+        const closeSecretCardModal = () => {
+          activeCardModalPlayer.value = null;
+          isCardFlipped.value = false;
+          playClick();
+        };
+
+        const startInquiryStage = () => {
+          timeRemaining.value = roundTimeConfig.value;
+          isPaused.value = false;
+          setStatus('INQUIRY');
+        };
+
+        const togglePause = () => { 
+          isPaused.value = !isPaused.value; 
+          playClick();
+        };
+        const adjustTime = (delta) => { 
+          timeRemaining.value = Math.max(0, timeRemaining.value + delta); 
+          broadcastToAllMobiles(); 
+          playClick();
+        };
+        const setTime = (sec) => { 
+          timeRemaining.value = sec; 
+          broadcastToAllMobiles(); 
+          playClick();
+        };
+
+        const nextTurn = () => {
+          playClick();
+          const names = players.value.map(p => p.name);
+          const idx = names.indexOf(activeAsker.value);
+          activeAsker.value = activeAnswerer.value;
+          activeAnswerer.value = names[(idx + 2) % names.length];
+        };
+
+        const triggerVoting = () => {
+          votesTally.value = {};
+          selectedVoteTargetId.value = "";
+          setStatus('VOTING');
+        };
+
+        const triggerSpySurrender = () => {
+          setStatus('SPY_GUESS');
+        };
+
+        const voteForPlayer = (targetId) => {
+          playClick();
+          selectedVoteTargetId.value = targetId;
+          votesTally.value[targetId] = (votesTally.value[targetId] || 0) + 1;
+        };
+
+        const resolveVotingTally = () => {
+          playClick();
+          let maxVotes = -1;
+          let highestTargetId = null;
+          for (const [id, count] of Object.entries(votesTally.value)) {
+            if (count > maxVotes) {
+              maxVotes = count;
+              highestTargetId = id;
+            }
+          }
+
+          if (!highestTargetId) highestTargetId = players.value[0].id;
+          const accused = players.value.find(p => p.id === highestTargetId);
+
+          if (accused && accused.isSpy) {
+            setStatus('SPY_GUESS');
+          } else {
+            gameResult.value = {
+              winner: 'SPY',
+              reasonText: `猜疑撕裂了信任，無辜的夥伴【${accused ? accused.name : '成員'}】遭到冤枉指認逮捕，潛伏特務線民趁虛脫逃！`
+            };
+            setStatus('DEBRIEF');
+          }
+        };
+
+        const cancelVoting = () => {
+          setStatus('INQUIRY');
+        };
+
+        const submitSpyGuess = (guessedScenarioId) => {
+          const isCorrect = guessedScenarioId === currentScenario.value.id;
+          if (isCorrect) {
+            gameResult.value = {
+              winner: 'SPY',
+              reasonText: `特務線民精準密報秘密據點（${currentScenario.value.name}），警備機關全盤破獲逮捕！`
+            };
+          } else {
+            gameResult.value = {
+              winner: 'CITIZENS',
+              reasonText: `特務線民指認地點錯誤，秘密聚會未被洩漏，反抗成員成功守護了夥伴與行動！`
+            };
+          }
+          setStatus('DEBRIEF');
+        };
+
+        const resetToLobby = () => {
+          setStatus('LOBBY');
+        };
+
+        const setStatus = (st) => {
+          currentStatus.value = st;
+          broadcastToAllMobiles();
+
+          if (st === 'LOBBY') {
+            stopHeartbeatLoop();
+            renderQR();
+          } else if (st === 'VOTING') {
+            stopHeartbeatLoop();
+            playAlarm();
+          } else if (st === 'SPY_GUESS') {
+            stopHeartbeatLoop();
+          } else if (st === 'DEBRIEF') {
+            stopHeartbeatLoop();
+            playDecryptionReveal();
+          }
+        };
+
+        // ========================================================
+        // 14 幅手繪木刻版畫風格向量插畫生成器 (完全純 SVG 繪製)
+        // ========================================================
+        const getScenarioSvg = (id, isLarge = false) => {
+          const w = 640;
+          const h = 360;
+          const baseDefs = `
+            <defs>
+              <linearGradient id="amberGlow_${id}" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#fbbf24" stop-opacity="0.9"/>
+                <stop offset="100%" stop-color="#b45309" stop-opacity="0.3"/>
+              </linearGradient>
+              <radialGradient id="lantern_${id}" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stop-color="#fbbf24" stop-opacity="0.95"/>
+                <stop offset="35%" stop-color="#d97706" stop-opacity="0.45"/>
+                <stop offset="100%" stop-color="#020617" stop-opacity="0"/>
+              </radialGradient>
+              <radialGradient id="redSlight_${id}" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stop-color="#ef4444" stop-opacity="0.9"/>
+                <stop offset="45%" stop-color="#991b1b" stop-opacity="0.35"/>
+                <stop offset="100%" stop-color="#020617" stop-opacity="0"/>
+              </radialGradient>
+              <pattern id="woodcut_lines_${id}" width="6" height="6" patternUnits="userSpaceOnUse">
+                <line x1="0" y1="0" x2="6" y2="6" stroke="#1e293b" stroke-width="0.8" stroke-opacity="0.35"/>
+              </pattern>
+            </defs>
+          `;
+
+          let sceneGraphics = '';
+
+          switch (id) {
+            case 'white_terror_01':
+              // 牯嶺街老宅・深夜讀書會
+              sceneGraphics = `
+                <rect x="0" y="0" width="${w}" height="${h}" fill="#080d18"/>
+                <rect x="0" y="0" width="${w}" height="${h}" fill="url(#woodcut_lines_${id})"/>
+                <!-- 日式木格窗櫺與夜空月影 -->
+                <rect x="360" y="30" width="230" height="200" fill="#0f172a" stroke="#334155" stroke-width="4"/>
+                <line x1="475" y1="30" x2="475" y2="230" stroke="#334155" stroke-width="2.5"/>
+                <line x1="360" y1="130" x2="590" y2="130" stroke="#334155" stroke-width="2.5"/>
+                <line x1="360" y1="80" x2="590" y2="80" stroke="#334155" stroke-width="1.5"/>
+                <line x1="360" y1="180" x2="590" y2="180" stroke="#334155" stroke-width="1.5"/>
+                <!-- 榻榻米線條 -->
+                <line x1="0" y1="260" x2="${w}" y2="260" stroke="#475569" stroke-width="3"/>
+                <line x1="180" y1="260" x2="90" y2="${h}" stroke="#334155" stroke-width="2"/>
+                <line x1="420" y1="260" x2="520" y2="${h}" stroke="#334155" stroke-width="2"/>
+                <!-- 油燈光暈與燈座 -->
+                <circle cx="260" cy="200" r="140" fill="url(#lantern_${id})"/>
+                <path d="M255 180 L265 180 L261 160 Z" fill="#fbbf24"/>
+                <rect x="256" y="180" width="8" height="28" fill="#78350f" rx="2"/>
+                <ellipse cx="260" cy="210" rx="20" ry="6" fill="#451a03"/>
+                <!-- 讀書人剪影 -->
+                <path d="M110 280 C120 190, 180 180, 205 220 C225 260, 200 290, 180 300 Z" fill="#020617"/>
+                <!-- 榻榻米暗格掀起與禁書 -->
+                <polygon points="210,245 250,235 290,245 250,255" fill="#f8fafc" opacity="0.95"/>
+                <rect x="220" y="250" width="80" height="8" fill="#d97706" opacity="0.8"/>
+                <text x="30" y="55" fill="#f59e0b" font-size="18" font-family="'Noto Serif TC', serif" font-weight="900" letter-spacing="3">牯嶺街老宅・深夜讀書會</text>
+              `;
+              break;
+
+            case 'white_terror_02':
+              // 防空洞裡的地下油印機
+              sceneGraphics = `
+                <rect x="0" y="0" width="${w}" height="${h}" fill="#040711"/>
+                <rect x="0" y="0" width="${w}" height="${h}" fill="url(#woodcut_lines_${id})"/>
+                <!-- 防空洞圓拱天花板 -->
+                <path d="M20 ${h} C20 80, ${w-20} 80, ${w-20} ${h}" fill="none" stroke="#1e293b" stroke-width="28"/>
+                <path d="M50 ${h} C50 110, ${w-50} 110, ${w-50} ${h}" fill="none" stroke="#334155" stroke-width="4"/>
+                <!-- 垂掛裸電燈泡與光暈 -->
+                <line x1="320" y1="0" x2="320" y2="120" stroke="#64748b" stroke-width="2"/>
+                <circle cx="320" cy="135" r="120" fill="url(#lantern_${id})"/>
+                <circle cx="320" cy="125" r="7" fill="#fef08a"/>
+                <!-- 油印機本體與滾筒 -->
+                <rect x="220" y="190" width="200" height="95" fill="#0f172a" stroke="#cbd5e1" stroke-width="2.5" rx="6"/>
+                <circle cx="320" cy="235" r="36" fill="#1e293b" stroke="#f59e0b" stroke-width="3"/>
+                <line x1="320" y1="235" x2="355" y2="210" stroke="#f59e0b" stroke-width="4.5"/>
+                <!-- 晾在麻繩上的地下刊物 -->
+                <line x1="60" y1="160" x2="220" y2="175" stroke="#475569" stroke-width="2"/>
+                <rect x="80" y="170" width="35" height="50" fill="#f8fafc" opacity="0.85" transform="rotate(-5 80 170)"/>
+                <rect x="135" y="175" width="35" height="50" fill="#f8fafc" opacity="0.8" transform="rotate(3 135 175)"/>
+                <text x="30" y="55" fill="#f59e0b" font-size="18" font-family="'Noto Serif TC', serif" font-weight="900" letter-spacing="3">防空洞地下油印機</text>
+              `;
+              break;
+
+            case 'white_terror_03':
+              // 阿里山深處・高山自治會議
+              sceneGraphics = `
+                <rect x="0" y="0" width="${w}" height="${h}" fill="#030712"/>
+                <!-- 遠山月影與古檜木剪影 -->
+                <path d="M0 240 Q160 140 320 220 T${w} 180 L${w} ${h} L0 ${h} Z" fill="#0b1324"/>
+                <path d="M80 ${h} L110 90 L140 ${h} Z M200 ${h} L225 120 L250 ${h} Z M480 ${h} L510 80 L540 ${h} Z" fill="#020617"/>
+                <!-- 營火光芒與飛散火星 -->
+                <circle cx="320" cy="260" r="140" fill="url(#lantern_${id})"/>
+                <path d="M305 280 Q320 230 325 240 Q335 230 335 280 Z" fill="#ef4444"/>
+                <path d="M312 280 Q320 245 323 250 Q328 245 328 280 Z" fill="#fbbf24"/>
+                <!-- 原住民部落領袖背影剪影 -->
+                <path d="M220 ${h} C230 250 270 250 280 ${h} Z" fill="#020617"/>
+                <path d="M360 ${h} C370 250 410 250 420 ${h} Z" fill="#020617"/>
+                <!-- 地上的自治藍圖地圖紙卷 -->
+                <polygon points="300,285 340,285 335,295 295,295" fill="#fde68a" opacity="0.8"/>
+                <text x="30" y="55" fill="#f59e0b" font-size="18" font-family="'Noto Serif TC', serif" font-weight="900" letter-spacing="3">阿里山深處・高山自治會議</text>
+              `;
+              break;
+
+            case 'white_terror_04':
+              // 小鎮照相館・紅光暗房
+              sceneGraphics = `
+                <rect x="0" y="0" width="${w}" height="${h}" fill="#100305"/>
+                <rect x="0" y="0" width="${w}" height="${h}" fill="url(#woodcut_lines_${id})"/>
+                <!-- 紅色暗房安全燈與紅光光芒 -->
+                <circle cx="320" cy="110" r="150" fill="url(#redSlight_${id})"/>
+                <line x1="320" y1="0" x2="320" y2="80" stroke="#7f1d1d" stroke-width="2"/>
+                <rect x="308" y="80" width="24" height="24" fill="#ef4444" rx="4" stroke="#450a0a"/>
+                <!-- 晾乾繩子夾著沖洗中的照片 -->
+                <line x1="60" y1="120" x2="580" y2="135" stroke="#7f1d1d" stroke-width="2"/>
+                <rect x="120" y="130" width="60" height="75" fill="#450a0a" stroke="#ef4444" stroke-width="1.5"/>
+                <circle cx="150" cy="160" r="14" fill="#7f1d1d"/>
+                <rect x="230" y="132" width="60" height="75" fill="#450a0a" stroke="#ef4444" stroke-width="1.5"/>
+                <rect x="420" y="135" width="60" height="75" fill="#450a0a" stroke="#ef4444" stroke-width="1.5"/>
+                <!-- 顯影藥水瓷盤 -->
+                <rect x="200" y="250" width="240" height="60" fill="#1c0709" stroke="#991b1b" stroke-width="2" rx="4"/>
+                <text x="30" y="55" fill="#ef4444" font-size="18" font-family="'Noto Serif TC', serif" font-weight="900" letter-spacing="3">小鎮照相館・紅光暗房</text>
+              `;
+              break;
+
+            case 'white_terror_05':
+              // 火燒島打石場・夾帶紙條
+              sceneGraphics = `
+                <rect x="0" y="0" width="${w}" height="${h}" fill="#0b101d"/>
+                <!-- 烈日與鐵絲網 -->
+                <circle cx="500" cy="80" r="45" fill="#fbbf24" opacity="0.6"/>
+                <line x1="0" y1="100" x2="${w}" y2="130" stroke="#475569" stroke-width="2"/>
+                <line x1="0" y1="130" x2="${w}" y2="160" stroke="#475569" stroke-width="2"/>
+                <!-- 尖銳珊瑚礁石塊 -->
+                <polygon points="40,${h} 120,220 180,${h}" fill="#1e293b"/>
+                <polygon points="160,${h} 260,190 340,${h}" fill="#0f172a"/>
+                <polygon points="320,${h} 420,230 520,${h}" fill="#1e293b"/>
+                <!-- 十字鎬與密條 -->
+                <line x1="280" y1="230" x2="350" y2="300" stroke="#78350f" stroke-width="6"/>
+                <path d="M260 215 Q280 230 300 245" stroke="#94a3b8" stroke-width="8" fill="none"/>
+                <!-- 泥土中的秘密小藥包字條 -->
+                <rect x="240" y="300" width="22" height="15" fill="#f8fafc" stroke="#d97706" stroke-width="1.5" transform="rotate(15 240 300)"/>
+                <text x="30" y="55" fill="#f59e0b" font-size="18" font-family="'Noto Serif TC', serif" font-weight="900" letter-spacing="3">火燒島打石場・夾帶紙條</text>
+              `;
+              break;
+
+            case 'white_terror_06':
+              // 泰源監獄刺探與起義密謀
+              sceneGraphics = `
+                <rect x="0" y="0" width="${w}" height="${h}" fill="#050914"/>
+                <rect x="0" y="0" width="${w}" height="${h}" fill="url(#woodcut_lines_${id})"/>
+                <!-- 巨型混凝土崗哨與探照燈光束 -->
+                <polygon points="480,40 560,40 580,${h} 460,${h}" fill="#0f172a" stroke="#334155" stroke-width="2"/>
+                <polygon points="500,60 540,60 545,100 495,100" fill="#1e293b"/>
+                <!-- 探照燈向左下照射的光錐 -->
+                <polygon points="520,80 0,160 0,290" fill="#fde68a" opacity="0.12"/>
+                <!-- 鐵窗柵欄與高牆 -->
+                <line x1="0" y1="220" x2="360" y2="220" stroke="#334155" stroke-width="6"/>
+                <line x1="80" y1="120" x2="80" y2="220" stroke="#475569" stroke-width="4"/>
+                <line x1="140" y1="120" x2="140" y2="220" stroke="#475569" stroke-width="4"/>
+                <line x1="200" y1="120" x2="200" y2="220" stroke="#475569" stroke-width="4"/>
+                <!-- 難友手銬與密謀圖卷 -->
+                <circle cx="140" cy="280" r="10" fill="none" stroke="#64748b" stroke-width="3"/>
+                <text x="30" y="55" fill="#f59e0b" font-size="18" font-family="'Noto Serif TC', serif" font-weight="900" letter-spacing="3">泰源監獄・刺探與起義密謀</text>
+              `;
+              break;
+
+            case 'white_terror_07':
+              // 自由時代雜誌社防暴鐵門內
+              sceneGraphics = `
+                <rect x="0" y="0" width="${w}" height="${h}" fill="#090d16"/>
+                <!-- 牢固厚重的防暴鐵門鐵枝 -->
+                <rect x="40" y="30" width="220" height="280" fill="#030712" stroke="#475569" stroke-width="6"/>
+                <line x1="80" y1="30" x2="80" y2="310" stroke="#64748b" stroke-width="4"/>
+                <line x1="120" y1="30" x2="120" y2="310" stroke="#64748b" stroke-width="4"/>
+                <line x1="160" y1="30" x2="160" y2="310" stroke="#64748b" stroke-width="4"/>
+                <line x1="200" y1="30" x2="200" y2="310" stroke="#64748b" stroke-width="4"/>
+                <!-- 辦公桌與老打字機 -->
+                <circle cx="440" cy="180" r="130" fill="url(#lantern_${id})"/>
+                <rect x="360" y="210" width="160" height="75" fill="#1e293b" stroke="#cbd5e1" stroke-width="2" rx="4"/>
+                <rect x="400" y="175" width="80" height="35" fill="#0f172a" stroke="#94a3b8" stroke-width="2"/>
+                <!-- 堆積如山的稿件紙張 -->
+                <polygon points="410,165 470,165 460,180 420,180" fill="#ffffff" opacity="0.95"/>
+                <text x="30" y="55" fill="#f59e0b" font-size="18" font-family="'Noto Serif TC', serif" font-weight="900" letter-spacing="3">自由時代雜誌社防暴鐵門內</text>
+              `;
+              break;
+
+            case 'white_terror_08':
+              // 溫州街深夜警總吉普車
+              sceneGraphics = `
+                <rect x="0" y="0" width="${w}" height="${h}" fill="#020409"/>
+                <!-- 雨夜臺北柏油路倒影 -->
+                <line x1="0" y1="260" x2="${w}" y2="260" stroke="#1e293b" stroke-width="3"/>
+                <!-- 軍用吉普車車頭輪廓與刺眼車大燈 -->
+                <polygon points="260,190 380,190 410,270 230,270" fill="#0f172a" stroke="#334155" stroke-width="2"/>
+                <!-- 左右兩盞巨大強烈射燈 -->
+                <circle cx="270" cy="225" r="24" fill="#fef08a"/>
+                <circle cx="370" cy="225" r="24" fill="#fef08a"/>
+                <!-- 射向地面的強光光錐 -->
+                <polygon points="270,225 100,${h} 290,${h}" fill="#fde68a" opacity="0.25"/>
+                <polygon points="370,225 350,${h} 540,${h}" fill="#fde68a" opacity="0.25"/>
+                <!-- 巷弄電線桿與風雨剪影 -->
+                <line x1="120" y1="40" x2="120" y2="260" stroke="#475569" stroke-width="5"/>
+                <line x1="80" y1="70" x2="160" y2="70" stroke="#475569" stroke-width="4"/>
+                <text x="30" y="55" fill="#f59e0b" font-size="18" font-family="'Noto Serif TC', serif" font-weight="900" letter-spacing="3">溫州街深夜・警總吉普車</text>
+              `;
+              break;
+
+            case '228_01':
+              // 中山堂二二八處委會起草密室
+              sceneGraphics = `
+                <rect x="0" y="0" width="${w}" height="${h}" fill="#080c18"/>
+                <!-- 中山堂古典圓柱拱門結構 -->
+                <rect x="60" y="40" width="40" height="230" fill="#1e293b" stroke="#334155" stroke-width="2"/>
+                <rect x="540" y="40" width="40" height="230" fill="#1e293b" stroke="#334155" stroke-width="2"/>
+                <path d="M60 40 Q320 -10 580 40" fill="none" stroke="#334155" stroke-width="4"/>
+                <!-- 會議長桌與老電台麥克風 -->
+                <rect x="140" y="240" width="360" height="50" fill="#0f172a" stroke="#f59e0b" stroke-width="2" rx="4"/>
+                <!-- 復古鵝頸麥克風 -->
+                <line x1="320" y1="240" x2="320" y2="180" stroke="#94a3b8" stroke-width="3"/>
+                <circle cx="320" cy="170" r="14" fill="#334155" stroke="#cbd5e1" stroke-width="2"/>
+                <!-- 散落的改革大綱電報手稿 -->
+                <rect x="220" y="235" width="55" height="30" fill="#ffffff" opacity="0.9" transform="rotate(-6 220 235)"/>
+                <rect x="365" y="238" width="55" height="30" fill="#ffffff" opacity="0.85" transform="rotate(8 365 238)"/>
+                <text x="30" y="55" fill="#f59e0b" font-size="18" font-family="'Noto Serif TC', serif" font-weight="900" letter-spacing="3">中山堂處委會起草密室</text>
+              `;
+              break;
+
+            case '228_02':
+              // 大肚溪畔二七部隊突圍集結點
+              sceneGraphics = `
+                <rect x="0" y="0" width="${w}" height="${h}" fill="#040814"/>
+                <!-- 鐵道鋼桁架鐵橋與夜月 -->
+                <circle cx="520" cy="70" r="30" fill="#f1f5f9" opacity="0.85"/>
+                <line x1="0" y1="160" x2="${w}" y2="160" stroke="#334155" stroke-width="6"/>
+                <path d="M30 160 L90 100 L150 160 M150 160 L210 100 L270 160 M270 160 L330 100 L390 160 M390 160 L450 100 L510 160" stroke="#475569" stroke-width="3" fill="none"/>
+                <!-- 改裝木炭卡車車身與大輪胎 -->
+                <rect x="180" y="190" width="220" height="85" fill="#020617" stroke="#334155" stroke-width="2.5" rx="6"/>
+                <circle cx="230" cy="280" r="26" fill="#0f172a" stroke="#64748b" stroke-width="4"/>
+                <circle cx="350" cy="280" r="26" fill="#0f172a" stroke="#64748b" stroke-width="4"/>
+                <!-- 青年手握步槍刺刀倒影 -->
+                <line x1="430" y1="180" x2="430" y2="280" stroke="#94a3b8" stroke-width="3"/>
+                <line x1="428" y1="165" x2="432" y2="180" stroke="#ef4444" stroke-width="4"/>
+                <text x="30" y="55" fill="#f59e0b" font-size="18" font-family="'Noto Serif TC', serif" font-weight="900" letter-spacing="3">大肚溪畔・二七部隊突圍點</text>
+              `;
+              break;
+
+            case '228_03':
+              // 府城湯德章律師事務所
+              sceneGraphics = `
+                <rect x="0" y="0" width="${w}" height="${h}" fill="#070a14"/>
+                <!-- 臺南洋樓拱門長窗 -->
+                <path d="M120 220 L120 70 Q170 20 220 70 L220 220 Z" fill="#0f172a" stroke="#334155" stroke-width="3"/>
+                <!-- 律師桌與正義天平 -->
+                <rect x="240" y="210" width="280" height="80" fill="#131b2e" stroke="#f59e0b" stroke-width="2" rx="4"/>
+                <!-- 天平 -->
+                <line x1="440" y1="210" x2="440" y2="140" stroke="#d97706" stroke-width="3"/>
+                <line x1="410" y1="150" x2="470" y2="150" stroke="#d97706" stroke-width="2"/>
+                <circle cx="410" cy="165" r="8" fill="none" stroke="#d97706" stroke-width="2"/>
+                <circle cx="470" cy="165" r="8" fill="none" stroke="#d97706" stroke-width="2"/>
+                <!-- 鐵火爐正燃燒的名冊灰燼 -->
+                <rect x="270" y="200" width="50" height="50" fill="#1f2937" stroke="#ef4444" stroke-width="2" rx="20"/>
+                <path d="M285 220 Q295 190 298 200 Q305 190 305 220 Z" fill="#ef4444"/>
+                <text x="30" y="55" fill="#f59e0b" font-size="18" font-family="'Noto Serif TC', serif" font-weight="900" letter-spacing="3">府城湯德章律師事務所</text>
+              `;
+              break;
+
+            case 'jr01':
+              // 大正文協夏日講習會與「臨監」黑板
+              sceneGraphics = `
+                <rect x="0" y="0" width="${w}" height="${h}" fill="#0b1120"/>
+                <!-- 講堂講台木地板 -->
+                <line x1="0" y1="240" x2="${w}" y2="240" stroke="#475569" stroke-width="3"/>
+                <!-- 大黑板與粉筆字跡 -->
+                <rect x="180" y="40" width="280" height="150" fill="#064e3b" stroke="#78350f" stroke-width="6" rx="4"/>
+                <text x="230" y="100" fill="#fef08a" font-size="22" font-family="'Noto Serif TC', serif" font-weight="900">弁士注意！</text>
+                <text x="260" y="145" fill="#f87171" font-size="18" font-family="'Noto Serif TC', serif" font-weight="900">【勒令中止】</text>
+                <!-- 第一排帶武士刀的高等警察剪影 -->
+                <path d="M80 ${h} C90 260 130 260 140 ${h} Z" fill="#020617"/>
+                <line x1="125" y1="270" x2="160" y2="330" stroke="#cbd5e1" stroke-width="3"/>
+                <!-- 講台上長衫講者 -->
+                <path d="M470 240 C480 160 520 160 530 240 Z" fill="#1e293b"/>
+                <text x="30" y="55" fill="#f59e0b" font-size="18" font-family="'Noto Serif TC', serif" font-weight="900" letter-spacing="3">大正文協講習會與「臨監」黑板</text>
+              `;
+              break;
+
+            case 'jr02':
+              // 霧社山林獵寮深夜血盟
+              sceneGraphics = `
+                <rect x="0" y="0" width="${w}" height="${h}" fill="#02050e"/>
+                <!-- 圓月與高山獵寮茅草屋簷 -->
+                <circle cx="120" cy="90" r="38" fill="#fef08a" opacity="0.8"/>
+                <polygon points="180,50 560,90 540,240 160,200" fill="#0f172a" stroke="#334155" stroke-width="3"/>
+                <!-- 炭火營光 -->
+                <circle cx="340" cy="260" r="130" fill="url(#lantern_${id})"/>
+                <!-- 交叉的番刀獵刃 -->
+                <line x1="280" y1="220" x2="400" y2="280" stroke="#e2e8f0" stroke-width="5"/>
+                <line x1="400" y1="220" x2="280" y2="280" stroke="#e2e8f0" stroke-width="5"/>
+                <circle cx="340" cy="250" r="10" fill="#ef4444"/>
+                <!-- 傳統菱形祖靈織紋飾帶 -->
+                <polygon points="30,320 50,300 70,320 50,340" fill="#ef4444"/>
+                <polygon points="70,320 90,300 110,320 90,340" fill="#f59e0b"/>
+                <polygon points="110,320 130,300 150,320 130,340" fill="#ef4444"/>
+                <text x="30" y="55" fill="#f59e0b" font-size="18" font-family="'Noto Serif TC', serif" font-weight="900" letter-spacing="3">霧社山林獵寮深夜血盟</text>
+              `;
+              break;
+
+            case 'jr03':
+              // 二林蔗田旁破廟暗會
+              sceneGraphics = `
+                <rect x="0" y="0" width="${w}" height="${h}" fill="#050811"/>
+                <!-- 高聳茂密的甘蔗林剪影 -->
+                <path d="M40 ${h} Q60 120 70 60 M80 ${h} Q100 110 120 50 M140 ${h} Q130 140 150 70" stroke="#166534" stroke-width="5" fill="none"/>
+                <path d="M480 ${h} Q500 130 520 70 M530 ${h} Q550 120 560 60 M570 ${h} Q560 140 580 80" stroke="#166534" stroke-width="5" fill="none"/>
+                <!-- 破舊古廟燕尾脊與火把微光 -->
+                <path d="M160 190 Q300 130 440 190 L400 270 L200 270 Z" fill="#0f172a" stroke="#78350f" stroke-width="3"/>
+                <!-- 竹火把燃燒 -->
+                <circle cx="300" cy="220" r="120" fill="url(#lantern_${id})"/>
+                <!-- 蔗農過磅特製秤錘 -->
+                <line x1="260" y1="240" x2="340" y2="240" stroke="#cbd5e1" stroke-width="3"/>
+                <circle cx="280" cy="260" r="12" fill="#475569" stroke="#94a3b8" stroke-width="2"/>
+                <text x="30" y="55" fill="#f59e0b" font-size="18" font-family="'Noto Serif TC', serif" font-weight="900" letter-spacing="3">二林蔗田旁破廟暗會</text>
+              `;
+              break;
+
+            default:
+              sceneGraphics = `
+                <rect x="0" y="0" width="${w}" height="${h}" fill="#0f172a"/>
+                <circle cx="320" cy="180" r="100" fill="url(#lantern_${id})"/>
+                <rect x="220" y="140" width="200" height="80" fill="#1e293b" stroke="#f59e0b" stroke-width="2" rx="6"/>
+                <text x="320" y="185" fill="#f59e0b" font-size="16" font-family="'Noto Serif TC', serif" font-weight="bold" text-anchor="middle">臺灣轉型正義歷史檔案</text>
+              `;
+              break;
+          }
+
+          return `<svg viewBox="0 0 ${w} ${h}" class="w-full h-full object-cover select-none">${baseDefs}${sceneGraphics}</svg>`;
+        };
+
+        const renderQR = () => {
+          nextTick(() => {
+            const container = document.getElementById("qrcode");
+            if (!container) return;
+            container.innerHTML = "";
+            try {
+              if (window.QRCode) {
+                new QRCode(container, {
+                  text: joinUrl.value,
+                  width: 192,
+                  height: 192,
+                  colorDark: "#090d16",
+                  colorLight: "#ffffff",
+                  correctLevel: QRCode.CorrectLevel.M
+                });
+              } else {
+                container.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=192x192&data=${encodeURIComponent(joinUrl.value)}" alt="QR Code" class="w-full h-full rounded" />`;
+              }
+            } catch (err) {
+              container.innerHTML = `<div class="text-xs text-slate-700 font-bold p-4 text-center">手機加入請連線：<br>${joinUrl.value}</div>`;
+            }
+          });
+        };
+
+        const openGalleryModal = (scenario) => {
+          playClick();
+          selectedGalleryScenario.value = scenario || currentScenario.value || SCENARIOS[0];
+          isGalleryOpen.value = true;
+        };
+
+        const closeGalleryModal = () => { 
+          playClick();
+          isGalleryOpen.value = false; 
+        };
+
+        // 鍵盤監聽事件（空白鍵暫停、M鍵靜音、F鍵全螢幕）
+        const handleKeyDown = (e) => {
+          if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+          if (e.code === 'Space') {
+            e.preventDefault();
+            if (currentStatus.value === 'INQUIRY') togglePause();
+          } else if (e.code === 'KeyM') {
+            toggleMute();
+          } else if (e.code === 'KeyF') {
+            toggleFullScreen();
+          }
+        };
+
+        onMounted(() => {
+          initPeer();
+          if (!isMobileView.value) {
+            renderQR();
+          }
+
+          window.addEventListener('keydown', handleKeyDown);
+
+          clockTimer = setInterval(() => {
+            if (!isMobileView.value && currentStatus.value === 'INQUIRY' && !isPaused.value) {
+              if (timeRemaining.value > 0) {
+                timeRemaining.value--;
+                broadcastToAllMobiles();
+              } else {
+                triggerVoting();
+              }
+            }
+          }, 1000);
+        });
+
+        onUnmounted(() => {
+          if (clockTimer) clearInterval(clockTimer);
+          stopHeartbeatLoop();
+          if (peer) peer.destroy();
+          window.removeEventListener('keydown', handleKeyDown);
+        });
+
+        watch(
+          () => [currentStatus.value, timeRemaining.value, isPaused.value],
+          ([st, sec, paused]) => {
+            if (st === 'INQUIRY' && !paused && sec <= 60 && sec > 0) {
+              if (!heartbeatTimer) {
+                const tempo = sec <= 20 ? 650 : 950;
+                startHeartbeatLoop(tempo);
+              }
+            } else {
+              stopHeartbeatLoop();
+            }
+          }
+        );
+
+        return {
+          isMobileView,
+          mobileRoomTarget,
+          roomCode,
+          joinUrl,
+          customBaseUrl,
+          isLocalFileProtocol,
+          showNetHelpModal,
+          showRulesModal,
+          isFullscreen,
+          toggleFullScreen,
+          copyJoinUrl,
+          applyCustomBaseUrl,
+          currentStatus,
+          selectedEra,
+          roundTimeConfig,
+          timeRemaining,
+          formattedTime,
+          isUnderOneMinute,
+          timerProgressOffset,
+          isPaused,
+          isMuted,
+          audioUnlocked,
+          players,
+          newPlayerName,
+          candidateScenarios,
+          currentScenario,
+          spyPlayer,
+          activeAsker,
+          activeAnswerer,
+          activeCardModalPlayer,
+          isCardFlipped,
+          selectedVoteTargetId,
+          votesTally,
+          gameResult,
+          p2pStatus,
+          p2pStatusText,
+          connectedClientsCount,
+          mobileMyPlayer,
+          mobileInputName,
+          mobileGameState,
+          mobileMyCard,
+          mobileCardRevealed,
+          toggleMobileCardRevealed,
+          mobileSelectedVoteId,
+          mobileTimeRemaining,
+          mobileFormattedTime,
+          submitMobileJoin,
+          notifyCardChecked,
+          mobileCastVote,
+          mobileSubmitSpyGuess,
+          ensureAudioUnlocked,
+          toggleMute,
+          togglePause,
+          adjustTime,
+          setTime,
+          addPlayer,
+          removePlayer,
+          startGame,
+          openSecretCardModal,
+          closeSecretCardModal,
+          startInquiryStage,
+          nextTurn,
+          triggerVoting,
+          triggerSpySurrender,
+          voteForPlayer,
+          resolveVotingTally,
+          cancelVoting,
+          submitSpyGuess,
+          resetToLobby,
+          setStatus,
+          isGalleryOpen,
+          selectedGalleryScenario,
+          openGalleryModal,
+          closeGalleryModal,
+          getScenarioSvg,
+          currentInquiryPrompt,
+          drawNextPrompt
+        };
+      }
+    }).mount('#app');
+  </script>
+</body>
+</html>
